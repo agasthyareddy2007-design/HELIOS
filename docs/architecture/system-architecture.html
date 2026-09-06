@@ -1,0 +1,827 @@
+<title>HELIOS Architecture</title>
+<style>
+:root {
+  --ground: #fafaf9;
+  --surface: #ffffff;
+  --text: #1c1917;
+  --text-muted: #57534e;
+  --border: #e7e5e4;
+  --accent: #0369a1;
+  --accent-soft: #e0f2fe;
+  --code-bg: #f5f5f4;
+  --success: #16a34a;
+  --warning: #ea580c;
+  --info: #0284c7;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --ground: #0c0a09;
+    --surface: #1c1917;
+    --text: #fafaf9;
+    --text-muted: #a8a29e;
+    --border: #292524;
+    --accent: #38bdf8;
+    --accent-soft: #082f49;
+    --code-bg: #292524;
+    --success: #4ade80;
+    --warning: #fb923c;
+    --info: #38bdf8;
+  }
+}
+
+:root[data-theme="dark"] {
+  --ground: #0c0a09;
+  --surface: #1c1917;
+  --text: #fafaf9;
+  --text-muted: #a8a29e;
+  --border: #292524;
+  --accent: #38bdf8;
+  --accent-soft: #082f49;
+  --code-bg: #292524;
+  --success: #4ade80;
+  --warning: #fb923c;
+  --info: #38bdf8;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background: var(--ground);
+  color: var(--text);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  line-height: 1.6;
+  font-size: 15px;
+}
+
+.container {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 48px 24px;
+}
+
+header {
+  margin-bottom: 56px;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 32px;
+}
+
+h1 {
+  font-size: 36px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin-bottom: 12px;
+  line-height: 1.2;
+  text-wrap: balance;
+}
+
+.subtitle {
+  font-size: 18px;
+  color: var(--text-muted);
+  max-width: 700px;
+}
+
+h2 {
+  font-size: 24px;
+  font-weight: 600;
+  margin: 48px 0 16px;
+  letter-spacing: -0.01em;
+  text-wrap: balance;
+}
+
+h3 {
+  font-size: 18px;
+  font-weight: 600;
+  margin: 32px 0 12px;
+  color: var(--text);
+}
+
+p {
+  margin-bottom: 16px;
+  max-width: 70ch;
+}
+
+ul, ol {
+  margin: 16px 0;
+  padding-left: 24px;
+}
+
+li {
+  margin-bottom: 8px;
+}
+
+code {
+  background: var(--code-bg);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.9em;
+  font-family: 'SF Mono', 'Consolas', 'Monaco', monospace;
+}
+
+pre {
+  background: var(--code-bg);
+  padding: 16px;
+  border-radius: 8px;
+  overflow-x: auto;
+  margin: 16px 0;
+  border: 1px solid var(--border);
+}
+
+pre code {
+  background: none;
+  padding: 0;
+}
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 24px;
+  margin: 24px 0;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px;
+  margin: 24px 0;
+}
+
+.badge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  margin-right: 8px;
+  margin-bottom: 8px;
+}
+
+.badge-primary {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.badge-success {
+  background: color-mix(in srgb, var(--success) 15%, transparent);
+  color: var(--success);
+}
+
+.badge-warning {
+  background: color-mix(in srgb, var(--warning) 15%, transparent);
+  color: var(--warning);
+}
+
+.diagram {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 32px;
+  margin: 32px 0;
+  overflow-x: auto;
+}
+
+.flow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin: 16px 0;
+}
+
+.flow-node {
+  background: var(--accent-soft);
+  color: var(--accent);
+  padding: 12px 20px;
+  border-radius: 8px;
+  font-weight: 500;
+  font-size: 14px;
+  white-space: nowrap;
+}
+
+.flow-arrow {
+  color: var(--text-muted);
+  font-size: 20px;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 24px 0;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+th, td {
+  padding: 12px 16px;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+}
+
+th {
+  background: color-mix(in srgb, var(--accent) 8%, transparent);
+  font-weight: 600;
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+tr:last-child td {
+  border-bottom: none;
+}
+
+.callout {
+  background: var(--accent-soft);
+  border-left: 4px solid var(--accent);
+  padding: 16px 20px;
+  margin: 24px 0;
+  border-radius: 4px;
+}
+
+.callout-title {
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: var(--accent);
+}
+
+strong {
+  font-weight: 600;
+  color: var(--text);
+}
+
+a {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+</style>
+
+<div class="container">
+  <header>
+    <h1>HELIOS Architecture</h1>
+    <p class="subtitle">Technical reference for the weather-model blending and post-processing platform</p>
+  </header>
+
+  <section>
+    <h2>System Overview</h2>
+    <p>HELIOS is an ensemble blending and post-processing system that combines predictions from multiple Numerical Weather Prediction (NWP) models to produce more accurate and calibrated forecasts. It is NOT an independent NWP model.</p>
+
+    <div class="diagram">
+      <h3>Core Data Flow</h3>
+      <div class="flow">
+        <div class="flow-node">Multiple NWP Models</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-node">Data Ingestion</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-node">Preprocessing</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-node">ML Blending</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-node">Calibrated Forecast</div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Data Sources</h2>
+
+    <h3>NWP Models (Initial Target)</h3>
+    <div class="grid">
+      <div class="card">
+        <h4>GFS</h4>
+        <span class="badge badge-primary">NOAA</span>
+        <p>Global Forecast System - 0.25° resolution, 4 cycles/day, 384h lead time</p>
+      </div>
+      <div class="card">
+        <h4>ECMWF IFS</h4>
+        <span class="badge badge-primary">European Centre</span>
+        <p>Integrated Forecasting System - High resolution, global coverage</p>
+      </div>
+      <div class="card">
+        <h4>ICON</h4>
+        <span class="badge badge-primary">DWD</span>
+        <p>German Weather Service - Icosahedral nonhydrostatic model</p>
+      </div>
+      <div class="card">
+        <h4>UK Met Office</h4>
+        <span class="badge badge-primary">UKMO</span>
+        <p>Global atmospheric model - Unified Model configuration</p>
+      </div>
+      <div class="card">
+        <h4>GEM</h4>
+        <span class="badge badge-primary">CMC</span>
+        <p>Global Environmental Multiscale - Canadian model</p>
+      </div>
+    </div>
+
+    <h3>Reference & Auxiliary Data</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Source</th>
+          <th>Type</th>
+          <th>Purpose</th>
+          <th>Resolution</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>ERA5</strong></td>
+          <td>Reanalysis</td>
+          <td>Historical weather conditions, verification</td>
+          <td>0.25° hourly</td>
+        </tr>
+        <tr>
+          <td><strong>NASA POWER</strong></td>
+          <td>Satellite-derived</td>
+          <td>Meteorological data, auxiliary features</td>
+          <td>0.5° daily</td>
+        </tr>
+        <tr>
+          <td><strong>Observations</strong></td>
+          <td>Station/API</td>
+          <td>Real-time verification, recent weather features</td>
+          <td>Point-based</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="callout">
+      <div class="callout-title">⚠️ Important</div>
+      <p>Each NWP model has different APIs, archive availability, licensing, resolution, and access mechanisms. An abstraction layer normalizes all sources into a common HELIOS format.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>ML Competitors</h2>
+    <p>HELIOS evaluates three machine learning approaches, each with distinct strengths:</p>
+
+    <div class="card">
+      <h3>1. Kernel Regression</h3>
+      <span class="badge badge-success">Similarity-Based</span>
+      <p>Weights historical situations based on similarity to current conditions. Factors include:</p>
+      <ul>
+        <li><strong>Temporal recency</strong> - More recent situations have higher influence</li>
+        <li><strong>Geographic similarity</strong> - Similar locations and topography</li>
+        <li><strong>Season</strong> - Similar time of year and solar forcing</li>
+        <li><strong>Atmospheric conditions</strong> - Similar weather regimes</li>
+        <li><strong>NWP model disagreement</strong> - Ensemble spread and uncertainty</li>
+      </ul>
+      <p><strong>Key Concept</strong>: Recent + similar atmospheric situation → higher influence; Old + dissimilar → lower influence; Old + highly similar atmospheric regime → can still be useful</p>
+    </div>
+
+    <div class="card">
+      <h3>2. XGBoost</h3>
+      <span class="badge badge-success">Gradient Boosting</span>
+      <p>Gradient boosting for tabular weather features. Input features include:</p>
+      <ul>
+        <li>NWP forecast variables from all models</li>
+        <li>Ensemble spread and disagreement metrics</li>
+        <li>Lead time, forecast issue time, valid time</li>
+        <li>Seasonal indicators (month, season, hour)</li>
+        <li>Location (latitude, longitude)</li>
+        <li>Recent observed weather and ERA5 context</li>
+        <li>NASA POWER auxiliary data</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h3>3. MLP (Multi-Layer Perceptron)</h3>
+      <span class="badge badge-success">Neural Network</span>
+      <p>Neural network approach using PyTorch. Receives the same scientifically valid feature set as XGBoost for meaningful comparison.</p>
+      <p><strong>Hardware</strong>: NVIDIA RTX 5080 for training and inference</p>
+    </div>
+
+    <h3>Baselines for Comparison</h3>
+    <p>HELIOS must prove it improves upon:</p>
+    <ul>
+      <li><strong>Individual NWP forecasts</strong> - Raw model outputs</li>
+      <li><strong>Simple ensemble mean</strong> - Arithmetic average of all models</li>
+      <li><strong>Persistence/climatology</strong> - Where appropriate</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Forecast Verification</h2>
+
+    <div class="callout">
+      <div class="callout-title">🔒 Critical Principle</div>
+      <p><strong>Never allow future observations to leak into forecasts.</strong></p>
+      <p>A forecast issued at 2026-09-05 00:00 UTC for 2026-09-06 12:00 UTC must be evaluated against the observation that becomes available at/after the valid time.</p>
+    </div>
+
+    <h3>Verification Records</h3>
+    <p>Each forecast is tracked with:</p>
+    <table>
+      <thead>
+        <tr>
+          <th>Field</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>forecast_issue_time</code></td>
+          <td>When the forecast was generated</td>
+        </tr>
+        <tr>
+          <td><code>forecast_valid_time</code></td>
+          <td>The time the forecast is for</td>
+        </tr>
+        <tr>
+          <td><code>lead_time</code></td>
+          <td>Hours between issue and valid time</td>
+        </tr>
+        <tr>
+          <td><code>model</code></td>
+          <td>NWP model or HELIOS version</td>
+        </tr>
+        <tr>
+          <td><code>location</code></td>
+          <td>Geographic coordinates</td>
+        </tr>
+        <tr>
+          <td><code>forecast_value</code></td>
+          <td>Predicted value</td>
+        </tr>
+        <tr>
+          <td><code>observed_value</code></td>
+          <td>Actual observed value (after valid time)</td>
+        </tr>
+        <tr>
+          <td><code>error</code></td>
+          <td>forecast - observed</td>
+        </tr>
+        <tr>
+          <td><code>absolute_error</code></td>
+          <td>|forecast - observed|</td>
+        </tr>
+        <tr>
+          <td><code>squared_error</code></td>
+          <td>(forecast - observed)²</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>Metrics Breakdown</h3>
+    <p>Evaluation is stratified by:</p>
+    <ul>
+      <li><strong>Weather variable</strong> - Temperature, precipitation, wind, etc.</li>
+      <li><strong>Lead time</strong> - 0-6h, 6-24h, 24-72h, 72-168h, etc.</li>
+      <li><strong>Location/region</strong> - Geographic zones</li>
+      <li><strong>Season</strong> - Summer, winter, monsoon, etc.</li>
+      <li><strong>Model</strong> - Individual NWP models vs HELIOS</li>
+    </ul>
+
+    <p><strong>Appropriate Metrics</strong>:</p>
+    <ul>
+      <li>Continuous variables: MAE, RMSE, bias (mean error)</li>
+      <li>Probabilistic predictions: Brier score, calibration, reliability</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Continuous Improvement Loop</h2>
+
+    <div class="diagram">
+      <h3>Learning Cycle</h3>
+      <div class="flow">
+        <div class="flow-node">NWP Forecast</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-node">HELIOS Prediction</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-node">Actual Observation (later)</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-node">Calculate Errors</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-node">Store Verification</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-node">Training Dataset Grows</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-node">Periodic Retraining</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-node">Evaluate New Checkpoint</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-node">Promote Only If Better</div>
+      </div>
+    </div>
+
+    <p><strong>Important</strong>: Real-time inference and model training are separate systems. Do not retrain every time a user requests a forecast.</p>
+  </section>
+
+  <section>
+    <h2>Model Versioning & Checkpointing</h2>
+
+    <p>Each trained HELIOS version is independently identifiable:</p>
+    <pre><code>helios-0.1 → helios-0.2 → helios-0.3</code></pre>
+
+    <h3>Checkpoint Contents</h3>
+    <ul>
+      <li>Model files (weights, architecture)</li>
+      <li>Model version identifier</li>
+      <li>Feature configuration and preprocessing parameters</li>
+      <li>Normalization/scaling parameters</li>
+      <li>Hyperparameters</li>
+      <li>Training period (start/end dates)</li>
+      <li>Data source versions</li>
+      <li>Evaluation metrics (MAE, RMSE, bias by lead time/region)</li>
+      <li>Training timestamp</li>
+      <li>Git commit/version reference</li>
+    </ul>
+
+    <div class="callout">
+      <div class="callout-title">💾 Rollback Capability</div>
+      <p>Do not delete old checkpoints automatically. We need model rollback capability if a new version underperforms.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>Storage Strategy</h2>
+
+    <p><strong>Storage Constraint</strong>: ~220 GB allocated to HELIOS</p>
+
+    <h3>Storage-Aware Architecture</h3>
+    <div class="diagram">
+      <div class="flow">
+        <div class="flow-node">Download Historical Data</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-node">Preprocess</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-node">Train</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-node">Save Checkpoint</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-node">Verify Checkpoint</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-node">Delete Raw Data</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-node">Repeat with Larger Dataset</div>
+      </div>
+    </div>
+
+    <h3>Data Format Strategy</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Data Type</th>
+          <th>Format</th>
+          <th>Storage Location</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Raw NWP data</td>
+          <td>GRIB / NetCDF</td>
+          <td><code>data/raw/</code> (temporary)</td>
+        </tr>
+        <tr>
+          <td>Processed ML datasets</td>
+          <td>Parquet</td>
+          <td><code>data/processed/</code> (temporary)</td>
+        </tr>
+        <tr>
+          <td>Archived data</td>
+          <td>Zarr (chunked)</td>
+          <td><code>data/processed/</code> (temporary)</td>
+        </tr>
+        <tr>
+          <td>Model checkpoints</td>
+          <td>PyTorch / XGBoost</td>
+          <td><code>models/checkpoints/</code> (permanent)</td>
+        </tr>
+        <tr>
+          <td>Application data</td>
+          <td>PostgreSQL</td>
+          <td>Database (permanent)</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p><strong>Progressive Dataset Expansion</strong>: 1 year → 2 years → 3 years → 5 years → more</p>
+
+    <div class="callout">
+      <div class="callout-title">⚠️ Storage Rule</div>
+      <p>Only trained models and essential metadata remain permanently. Historical training data is temporary and deleted after checkpoint verification.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>Database Schema</h2>
+
+    <p><strong>Database</strong>: PostgreSQL 16 (independent from any Aether database)</p>
+
+    <h3>Core Entities</h3>
+    <ul>
+      <li><code>locations</code> - Geographic locations and metadata</li>
+      <li><code>nwp_models</code> - NWP model configurations and versions</li>
+      <li><code>nwp_runs</code> - Forecast model runs (initialization times)</li>
+      <li><code>nwp_forecasts</code> - Individual NWP predictions</li>
+      <li><code>observations</code> - Observed weather data</li>
+      <li><code>forecast_verification</code> - Forecast vs observation comparisons</li>
+      <li><code>helios_predictions</code> - HELIOS blended forecasts</li>
+      <li><code>model_versions</code> - HELIOS model checkpoint metadata</li>
+      <li><code>model_metrics</code> - Evaluation metrics by version</li>
+      <li><code>training_runs</code> - Training session records</li>
+    </ul>
+
+    <p><strong>Purpose</strong>: PostgreSQL contains structured application data, metadata, forecast records, observations, verification results, model versions, and metrics. Raw scientific weather data uses GRIB/NetCDF/Zarr formats.</p>
+  </section>
+
+  <section>
+    <h2>Technology Stack</h2>
+
+    <h3>Backend</h3>
+    <div class="grid">
+      <div class="card">
+        <strong>Python 3.10+</strong>
+        <p>Core language</p>
+      </div>
+      <div class="card">
+        <strong>FastAPI</strong>
+        <p>API server</p>
+      </div>
+      <div class="card">
+        <strong>PyTorch</strong>
+        <p>Neural networks (MLP)</p>
+      </div>
+      <div class="card">
+        <strong>XGBoost</strong>
+        <p>Gradient boosting</p>
+      </div>
+      <div class="card">
+        <strong>scikit-learn</strong>
+        <p>Kernel regression, preprocessing</p>
+      </div>
+      <div class="card">
+        <strong>PostgreSQL</strong>
+        <p>Structured data</p>
+      </div>
+      <div class="card">
+        <strong>SQLAlchemy</strong>
+        <p>Database ORM</p>
+      </div>
+    </div>
+
+    <h3>Data Processing</h3>
+    <div class="grid">
+      <div class="card">
+        <strong>xarray</strong>
+        <p>Multi-dimensional arrays</p>
+      </div>
+      <div class="card">
+        <strong>NetCDF / GRIB</strong>
+        <p>Scientific weather formats</p>
+      </div>
+      <div class="card">
+        <strong>Zarr</strong>
+        <p>Chunked array storage</p>
+      </div>
+      <div class="card">
+        <strong>Parquet</strong>
+        <p>Processed ML datasets</p>
+      </div>
+    </div>
+
+    <h3>Frontend (Future)</h3>
+    <div class="grid">
+      <div class="card">
+        <strong>Next.js</strong>
+        <p>React framework</p>
+      </div>
+      <div class="card">
+        <strong>TypeScript</strong>
+        <p>Type-safe JavaScript</p>
+      </div>
+      <div class="card">
+        <strong>Tailwind CSS</strong>
+        <p>Utility-first CSS</p>
+      </div>
+      <div class="card">
+        <strong>Vercel</strong>
+        <p>Deployment platform</p>
+      </div>
+    </div>
+
+    <h3>Infrastructure</h3>
+    <ul>
+      <li><strong>Docker Compose</strong> - Local development environment</li>
+      <li><strong>NVIDIA RTX 5080</strong> - GPU for training and inference</li>
+      <li><strong>PostgreSQL 16</strong> - Primary database</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Home AI Server Architecture (Future)</h2>
+
+    <div class="diagram">
+      <h3>Production Flow</h3>
+      <div class="flow">
+        <div class="flow-node">Internet User</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-node">Vercel Frontend (Next.js)</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-node">Secure Authenticated API</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-node">Home PC (RTX 5080)</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-node">FastAPI Backend</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-node">HELIOS Inference Engine</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-node">Forecast Result</div>
+      </div>
+    </div>
+
+    <div class="callout">
+      <div class="callout-title">🔒 Security</div>
+      <p><strong>Do NOT expose home PC through unsafe router port forwarding.</strong> A secure tunnel/reverse connection solution will be evaluated later.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>Project Phases</h2>
+
+    <h3>Current Phase: Scaffold and Foundation ✅</h3>
+    <ul>
+      <li>✅ Project structure created (81 directories)</li>
+      <li>✅ Initial documentation</li>
+      <li>✅ Configuration files</li>
+      <li>✅ Git repository initialized</li>
+    </ul>
+
+    <h3>Next Phases</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Phase</th>
+          <th>Tasks</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>NWP Adapters</strong></td>
+          <td>Implement data ingestion for GFS, ECMWF, ICON, UKMO, GEM</td>
+        </tr>
+        <tr>
+          <td><strong>Database Schema</strong></td>
+          <td>Implement PostgreSQL schema, migrations, models</td>
+        </tr>
+        <tr>
+          <td><strong>Baseline Models</strong></td>
+          <td>Implement kernel regression, XGBoost, MLP</td>
+        </tr>
+        <tr>
+          <td><strong>Verification System</strong></td>
+          <td>Build forecast-observation matching and metrics</td>
+        </tr>
+        <tr>
+          <td><strong>Frontend</strong></td>
+          <td>Build Next.js professional weather interface</td>
+        </tr>
+        <tr>
+          <td><strong>Production Deployment</strong></td>
+          <td>Secure tunnel, Vercel deployment, monitoring</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Important Guidelines</h2>
+
+    <div class="card">
+      <h3>DO NOT:</h3>
+      <ul>
+        <li>Download large datasets without explicit instruction</li>
+        <li>Train models automatically</li>
+        <li>Expose home PC through unsafe networking</li>
+        <li>Make unsupported accuracy claims without validation</li>
+        <li>Modify the separate Aether project (if present)</li>
+        <li>Place HELIOS inside the "ai models" directory</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h3>Storage Budget:</h3>
+      <ul>
+        <li>Maximum HELIOS working storage: ~220 GB</li>
+        <li>Historical data is temporary (delete after training)</li>
+        <li>Only checkpoints and metadata persist</li>
+        <li>System overhead: ~20 GB reserved</li>
+      </ul>
+    </div>
+  </section>
+
+  <footer style="margin-top: 64px; padding-top: 32px; border-top: 1px solid var(--border); color: var(--text-muted); font-size: 14px;">
+    <p>HELIOS Architecture Documentation · Version 0.1.0 · Built with scientific rigor, storage efficiency, and professional weather intelligence</p>
+  </footer>
+</div>
