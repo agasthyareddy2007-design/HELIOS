@@ -160,7 +160,7 @@ export function IndiaMap({
   );
 
   const onPointerDown = (e: React.PointerEvent<SVGSVGElement>) => {
-    (e.target as Element).setPointerCapture?.(e.pointerId);
+    (e.currentTarget as Element).setPointerCapture?.(e.pointerId);
     drag.current = { x: e.clientX, y: e.clientY, cx: view.cx, cy: view.cy };
     moved.current = false;
     setDragging(true);
@@ -178,6 +178,7 @@ export function IndiaMap({
     setView((v) => ({ ...v, cx: drag.current!.cx - dx, cy: drag.current!.cy - dy }));
   };
   const onPointerUp = (e: React.PointerEvent<SVGSVGElement>) => {
+    (e.currentTarget as Element).releasePointerCapture?.(e.pointerId);
     const wasDrag = moved.current;
     drag.current = null;
     setDragging(false);
