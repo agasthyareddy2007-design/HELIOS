@@ -63,6 +63,8 @@ credentials/
 *.db
 *.sqlite
 *.sqlite3
+*.db-wal
+*.db-shm
 database/local/
 
 # Data & Models
@@ -81,6 +83,9 @@ models/archive/
 *.pkl
 *.joblib
 *.safetensors
+
+# Except explicitly allowlisted V2 inference artifacts
+!ml/artifacts/lockedtest_v2_20260915_184718/*.pkl
 
 # Logs
 logs/
@@ -113,3 +118,6 @@ Thumbs.db
 # Docker
 .dockerignore
 docker-compose.override.yml
+data/runtime/
+project.db
+.claude/

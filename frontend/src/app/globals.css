@@ -1,0 +1,756 @@
+@import "tailwindcss";
+
+/*
+  HELIOS DESIGN LANGUAGE
+  ----------------------
+  Reference points: scientific instrumentation, Earth-observation ground
+  stations, spacecraft telemetry. Deliberately NOT a SaaS dashboard.
+
+  Principles
+  - A deep atmospheric void as the substrate; light is used as information.
+  - Each NWP model owns one spectral hue, used consistently everywhere
+    (streams, charts, weights, labels). Colour = identity, never decoration.
+  - HELIOS itself is warm white/amber: the synthesis of the three inputs.
+  - Type: tight optical sizing, tabular numerals for all measurements.
+  - Structure via 1px hairlines and layered elevation, not rounded cards.
+*/
+
+@theme {
+  /* --- substrate ------------------------------------------------------ */
+  --color-void: #04070c;
+  --color-abyss: #070b12;
+  --color-deep: #0a1018;
+  --color-panel: #0d141e;
+  --color-raised: #111a26;
+  --color-hairline: #1b2735;
+  --color-hairline-bright: #27374a;
+
+  /* --- text ----------------------------------------------------------- */
+  --color-ink: #e8eef6;
+  --color-ink-dim: #9aabc0;
+  --color-ink-faint: #728a9f; /* WCAG AA: 5.62:1 on --color-void */
+  --color-ink-ghost: #3b4a5c;
+
+  /* --- NWP model identity (spectral, consistent everywhere) ----------- */
+  --color-gfs: #4da3ff;
+  --color-gfs-glow: #8fc9ff;
+  --color-ifs: #8b7cff;
+  --color-ifs-glow: #b6acff;
+  --color-icon: #2fd6b4;
+  --color-icon-glow: #7ef0d8;
+
+  /* --- HELIOS synthesis ---------------------------------------------- */
+  --color-helios: #ffc773;
+  --color-helios-core: #fff2d6;
+  --color-helios-deep: #f59b3c;
+
+  /* --- semantic ------------------------------------------------------- */
+  --color-baseline: #6b7b8f;
+  --color-signal: #46e8a0;
+  --color-warn: #ffb347;
+  --color-alert: #ff6b6b;
+
+  /* --- type ----------------------------------------------------------- */
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-jetbrains), ui-monospace, "SF Mono", Menlo, monospace;
+  --font-display: var(--font-grotesk), var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+
+  /* --- motion --------------------------------------------------------- */
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out-circ: cubic-bezier(0.85, 0, 0.15, 1);
+}
+
+/* ---------------------------------------------------------------- base */
+
+:root {
+  color-scheme: dark;
+  --grid-line: rgba(120, 160, 200, 0.055);
+
+  /* Plain-CSS aliases (usable in inline styles / arbitrary values). */
+  --helios-amber: #ffc773;
+  --helios-amber-core: #fff2d6;
+  --helios-deep: #f59b3c;
+  --gfs: #4da3ff;
+  --ifs: #8b7cff;
+  --icon: #2fd6b4;
+  --ink: #e8eef6;
+  --ink-dim: #9aabc0;
+  --ink-faint: #728a9f;
+}
+
+/* Premium translucent surface — soft blur + fine border, not a boxy card. */
+.glass {
+  background: linear-gradient(
+    155deg,
+    rgba(18, 28, 42, 0.72),
+    rgba(9, 14, 22, 0.55)
+  );
+  backdrop-filter: blur(18px) saturate(1.1);
+  -webkit-backdrop-filter: blur(18px) saturate(1.1);
+  border: 1px solid rgba(120, 160, 210, 0.12);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.04) inset,
+    0 24px 60px -30px rgba(0, 0, 0, 0.8);
+}
+
+/* Atmospheric page backdrop: deep space → faint dawn horizon glow. */
+.atmosphere {
+  background:
+    radial-gradient(120% 80% at 15% -10%, rgba(45, 120, 200, 0.10), transparent 55%),
+    radial-gradient(120% 90% at 100% 0%, rgba(255, 170, 90, 0.06), transparent 50%),
+    radial-gradient(140% 120% at 50% 120%, rgba(20, 90, 110, 0.10), transparent 60%),
+    var(--color-void);
+}
+
+.text-gradient-helios {
+  background: linear-gradient(100deg, var(--helios-amber-core), var(--helios-amber) 55%, var(--helios-deep));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* Selected-location marker: warm dot + expanding ripple ring. */
+.helios-marker {
+  position: relative;
+  width: 16px;
+  height: 16px;
+  pointer-events: none;
+}
+.helios-marker__dot {
+  position: absolute;
+  inset: 5px;
+  border-radius: 999px;
+  background: var(--helios-amber-core);
+  box-shadow: 0 0 12px 3px rgba(255, 199, 115, 0.7);
+}
+.helios-marker__ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 999px;
+  border: 1.5px solid rgba(255, 199, 115, 0.9);
+  animation: helios-ripple 2.4s var(--ease-in-out-circ) infinite;
+}
+@keyframes helios-ripple {
+  0% { transform: scale(0.5); opacity: 0.9; }
+  70% { transform: scale(2.6); opacity: 0; }
+  100% { transform: scale(2.6); opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .helios-marker__ring { animation: none; opacity: 0.5; }
+}
+
+* {
+  border-color: var(--color-hairline);
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  background-color: var(--color-void);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  font-feature-settings: "cv11", "ss01";
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+}
+
+/* All measurements use tabular figures so digits never jitter when animating. */
+.tnum {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum";
+}
+
+/* Display voice — Space Grotesk. Tight optical tracking at large sizes. */
+.font-display {
+  font-family: var(--font-display);
+  font-feature-settings: "ss01";
+}
+.display-hero {
+  font-family: var(--font-display);
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  line-height: 0.96;
+}
+.display-section {
+  font-family: var(--font-display);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.02;
+}
+
+/* Instrument label: the small uppercase caption used across the interface. */
+.label {
+  font-family: var(--font-mono);
+  font-size: 0.70rem;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: var(--color-ink-faint);
+}
+
+.label-bright {
+  color: var(--color-ink-dim);
+}
+
+/* Hairline grid used behind instrument panels. */
+.instrument-grid {
+  background-image:
+    linear-gradient(to right, var(--grid-line) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--grid-line) 1px, transparent 1px);
+  background-size: 48px 48px;
+}
+
+/* Fine scanline texture — subtle, adds physicality without noise. */
+.scanlines::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0.015) 0px,
+    rgba(255, 255, 255, 0.015) 1px,
+    transparent 1px,
+    transparent 3px
+  );
+  mix-blend-mode: overlay;
+}
+
+/* ------------------------------------------------------------- a11y */
+
+:focus-visible {
+  outline: 2px solid var(--color-helios);
+  outline-offset: 2px;
+  border-radius: 1px;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+/* Honour the OS reduced-motion setting: kill decorative motion, keep layout. */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
+/* --------------------------------------------------------- scrollbar */
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: var(--color-abyss);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-hairline-bright);
+  border: 2px solid var(--color-abyss);
+  border-radius: 999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #34475e;
+}
+
+/* ----------------------------------------------------------- keyframes */
+
+@keyframes helios-pulse {
+  0%,
+  100% {
+    opacity: 0.55;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@keyframes helios-sweep {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(200%);
+  }
+}
+
+@keyframes helios-rise {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-pulse-soft {
+  animation: helios-pulse 2.8s var(--ease-in-out-circ) infinite;
+}
+
+.animate-sweep {
+  animation: helios-sweep 2.2s var(--ease-in-out-circ) infinite;
+}
+
+
+/* ==================================================================
+   SCROLL-EXPERIENCE LAYER
+   Premium glass, depth planes, masked typography. Scroll choreography
+   itself is driven by Motion values in React; this file provides the
+   static surfaces + reduced-motion / mobile fallbacks.
+   ================================================================== */
+
+/* Premium interface glass (VisionOS-inspired: frosted blur + saturation,
+   fine edge highlight, soft elevation). Not neon, not a flat rectangle. */
+.glass-panel {
+  position: relative;
+  background: linear-gradient(
+    160deg,
+    rgba(24, 36, 52, 0.55),
+    rgba(10, 16, 24, 0.42)
+  );
+  backdrop-filter: blur(28px) saturate(1.35);
+  -webkit-backdrop-filter: blur(28px) saturate(1.35);
+  border: 1px solid rgba(130, 170, 220, 0.14);
+  border-radius: 1.25rem;
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.06) inset,
+    0 0 0 1px rgba(0, 0, 0, 0.2),
+    0 30px 70px -32px rgba(0, 0, 0, 0.85);
+}
+/* Fine top edge highlight — light catching the glass rim. */
+.glass-panel::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(
+    150deg,
+    rgba(180, 210, 255, 0.28),
+    rgba(180, 210, 255, 0) 42%
+  );
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+/* Masked display heading: content is revealed by lifting up behind a clip.
+   The React layer animates the inner span's transform via a motion value. */
+.mask-line {
+  display: block;
+  overflow: hidden;
+  padding-bottom: 0.08em; /* room for descenders under the clip */
+}
+
+/* Depth-plane helper: elements that should read as floating above the field. */
+.depth-raise {
+  will-change: transform, opacity;
+}
+
+/* The evolving scroll field is painted by CSS radial gradients whose custom
+   properties are animated from React (motion values → CSS vars). */
+.scroll-field {
+  --field-x: 50%;
+  --field-y: 14%;
+  --field-warm: 0.05;
+  --field-cool: 0.10;
+  background:
+    radial-gradient(
+      90% 60% at var(--field-x) var(--field-y),
+      rgba(45, 120, 200, var(--field-cool)),
+      transparent 60%
+    ),
+    radial-gradient(
+      70% 50% at calc(100% - var(--field-x)) calc(100% - var(--field-y)),
+      rgba(255, 170, 90, var(--field-warm)),
+      transparent 55%
+    ),
+    var(--color-void);
+}
+
+/* Tablet / mobile: glass blur is the biggest GPU cost — dial it down so the
+   scroll stays at 60fps on weaker devices. */
+@media (max-width: 900px) {
+  .glass-panel {
+    backdrop-filter: blur(16px) saturate(1.2);
+    -webkit-backdrop-filter: blur(16px) saturate(1.2);
+  }
+}
+@media (max-width: 560px) {
+  .glass-panel {
+    /* fall back to a solid translucent surface — cheaper, still premium */
+    backdrop-filter: blur(10px) saturate(1.1);
+    -webkit-backdrop-filter: blur(10px) saturate(1.1);
+    background: linear-gradient(160deg, rgba(20, 30, 44, 0.86), rgba(10, 16, 24, 0.8));
+  }
+}
+
+/* Reduced motion: remove will-change hints and any residual field motion. */
+@media (prefers-reduced-motion: reduce) {
+  .depth-raise { will-change: auto; }
+}
+
+
+/* ==================================================================
+   LIQUID-GLASS CSS FALLBACK (mobile / reduced-motion)
+   A static HELIOS-palette aurora + a frosted glass body over it. No WebGL.
+   ================================================================== */
+.liquid-aurora-css {
+  background:
+    radial-gradient(60% 55% at 22% 28%, rgba(77, 163, 255, 0.55), transparent 60%),
+    radial-gradient(55% 60% at 78% 30%, rgba(255, 199, 115, 0.42), transparent 62%),
+    radial-gradient(65% 60% at 68% 76%, rgba(139, 124, 255, 0.5), transparent 60%),
+    radial-gradient(55% 55% at 28% 74%, rgba(47, 214, 180, 0.4), transparent 60%),
+    var(--color-void);
+}
+.liquid-glass-css {
+  border-radius: 999px / 44%;
+  background: linear-gradient(150deg, rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0.04) 55%, rgba(120, 150, 210, 0.08));
+  backdrop-filter: blur(22px) saturate(1.4);
+  -webkit-backdrop-filter: blur(22px) saturate(1.4);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.35) inset,
+    0 -20px 40px -30px rgba(120, 150, 220, 0.5) inset,
+    0 40px 80px -30px rgba(0, 0, 0, 0.7);
+}
+@media (max-width: 560px) {
+  .liquid-glass-css {
+    backdrop-filter: blur(14px) saturate(1.25);
+    -webkit-backdrop-filter: blur(14px) saturate(1.25);
+  }
+}
+
+
+/* ==================================================================
+   HELIOS MATERIAL SYSTEM  —  one optical vocabulary for the whole site
+   ------------------------------------------------------------------
+   The live environment is WebGL (see components/stage/HeliosStage).
+   These classes are the DOM-side surfaces that sit *inside* that
+   environment: they must read as thin optical layers over a real
+   material, never as opaque SaaS cards.
+   ================================================================== */
+
+/* --- CSS field: fallback + base tone under the WebGL stage ---------- */
+.helios-field-css {
+  background:
+    radial-gradient(70% 55% at 18% 12%, rgba(77, 163, 255, 0.10), transparent 62%),
+    radial-gradient(60% 50% at 82% 18%, rgba(139, 124, 255, 0.09), transparent 60%),
+    radial-gradient(65% 55% at 72% 82%, rgba(255, 199, 115, 0.07), transparent 60%),
+    radial-gradient(60% 50% at 22% 78%, rgba(47, 214, 180, 0.06), transparent 58%),
+    var(--color-void);
+}
+
+/* --- the canonical optical surface --------------------------------- */
+/* Used by forecast panels, landing surfaces and contact alike, so every
+   route shares one material. Thin, cool, edge-lit; the WebGL field shows
+   through it rather than being hidden behind an opaque fill. */
+.surface {
+  position: relative;
+  background:
+    linear-gradient(158deg, rgba(20, 31, 46, 0.52), rgba(9, 14, 22, 0.40));
+  backdrop-filter: blur(20px) saturate(1.28);
+  -webkit-backdrop-filter: blur(20px) saturate(1.28);
+  border: 1px solid rgba(126, 165, 218, 0.13);
+  box-shadow:
+    inset 0 1px 0 rgba(214, 232, 255, 0.07),
+    inset 0 -24px 48px -40px rgba(120, 160, 220, 0.35),
+    0 28px 64px -34px rgba(0, 0, 0, 0.82);
+}
+/* fine rim light along the top-left, as if catching the scene light */
+.surface::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(150deg, rgba(186, 214, 255, 0.26), rgba(186, 214, 255, 0) 46%);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+/* raised tier — used sparingly for the primary readout on a page */
+.surface-raised {
+  background: linear-gradient(158deg, rgba(24, 37, 54, 0.62), rgba(10, 16, 25, 0.48));
+  box-shadow:
+    inset 0 1px 0 rgba(214, 232, 255, 0.09),
+    0 40px 90px -38px rgba(0, 0, 0, 0.88);
+}
+/* recessed tier — for nested/secondary regions inside a surface */
+.surface-inset {
+  background: rgba(6, 10, 17, 0.42);
+  border: 1px solid rgba(126, 165, 218, 0.08);
+  box-shadow: inset 0 1px 0 rgba(0, 0, 0, 0.35);
+}
+
+/* Keep the older landing class as an alias so nothing regresses. */
+.glass-panel {
+  position: relative;
+  background: linear-gradient(158deg, rgba(20, 31, 46, 0.52), rgba(9, 14, 22, 0.40));
+  backdrop-filter: blur(20px) saturate(1.28);
+  -webkit-backdrop-filter: blur(20px) saturate(1.28);
+  border: 1px solid rgba(126, 165, 218, 0.13);
+  border-radius: 1.25rem;
+  box-shadow:
+    inset 0 1px 0 rgba(214, 232, 255, 0.07),
+    0 28px 64px -34px rgba(0, 0, 0, 0.82);
+}
+
+/* --- typography refinement ---------------------------------------- */
+/* Cinematic display sizes with optical tracking that tightens as size grows. */
+.t-display {
+  font-family: var(--font-display);
+  font-weight: 600;
+  letter-spacing: -0.032em;
+  line-height: 0.94;
+}
+.t-title {
+  font-family: var(--font-display);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.04;
+}
+.t-body {
+  font-size: 1.0625rem;
+  line-height: 1.72;
+  color: var(--color-ink-dim);
+  max-width: 60ch; /* controlled measure — reading comfort over full-bleed text */
+}
+/* instrument annotation: small, tracked, monospaced — used for telemetry only */
+.t-meta {
+  font-family: var(--font-mono);
+  font-size: 0.70rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--color-ink-faint);
+}
+
+/* --- responsive material cost ------------------------------------- */
+@media (max-width: 900px) {
+  .surface, .glass-panel {
+    backdrop-filter: blur(14px) saturate(1.18);
+    -webkit-backdrop-filter: blur(14px) saturate(1.18);
+  }
+}
+@media (max-width: 560px) {
+  /* Large blurred regions are the main GPU cost on phones: go more opaque
+     and cheaper while keeping the same visual language. */
+  .surface, .glass-panel {
+    backdrop-filter: blur(9px) saturate(1.1);
+    -webkit-backdrop-filter: blur(9px) saturate(1.1);
+    background: linear-gradient(158deg, rgba(18, 28, 42, 0.80), rgba(9, 14, 22, 0.72));
+  }
+}
+
+
+/* ==================================================================
+   CONTROL SURFACES + CURSOR LIGHT
+   Interaction is expressed as light moving across material, not as
+   glow or bounce. Both effects are pointer-driven via CSS custom
+   properties, so they cost no React renders.
+   ================================================================== */
+
+.helios-control {
+  --mx: 50%;
+  --my: 50%;
+}
+.helios-control__light {
+  position: absolute;
+  inset: -40%;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.28s ease-out;
+  background: radial-gradient(
+    38% 38% at var(--mx) var(--my),
+    rgba(255, 255, 255, 0.30),
+    rgba(255, 255, 255, 0) 70%
+  );
+}
+.helios-control:hover .helios-control__light { opacity: 1; }
+.helios-control:active .helios-control__light { opacity: 0.55; }
+
+/* Secondary/ghost controls read cooler: the light picks up the field hue. */
+.helios-control.surface .helios-control__light,
+.helios-control:not([class*="bg-\\[var\\(--helios-amber\\)\\]"]) .helios-control__light {
+  background: radial-gradient(
+    40% 40% at var(--mx) var(--my),
+    rgba(186, 214, 255, 0.20),
+    rgba(186, 214, 255, 0) 70%
+  );
+}
+
+/* --- site cursor light ------------------------------------------------
+   A single soft light that trails the pointer just above the atmosphere.
+   It makes the environment feel responsive without a custom cursor. */
+.helios-cursor {
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 520px;
+  height: 520px;
+  margin: -260px 0 0 -260px;
+  pointer-events: none;
+  z-index: 1;
+  opacity: 0;
+  transition: opacity 0.5s ease-out;
+  background: radial-gradient(
+    closest-side,
+    rgba(150, 190, 245, 0.075),
+    rgba(150, 190, 245, 0.030) 42%,
+    rgba(150, 190, 245, 0) 72%
+  );
+  will-change: transform;
+}
+.helios-cursor[data-active="true"] { opacity: 1; }
+
+/* Touch and reduced-motion users get neither effect. */
+@media (hover: none), (pointer: coarse) {
+  .helios-cursor { display: none; }
+  .helios-control__light { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .helios-cursor { display: none; }
+  .helios-control__light { transition: none; }
+}
+
+
+/* ==================================================================
+   ROBOT INTEGRATION + LINK INTERACTION
+   ================================================================== */
+
+/* The robot should stand IN the environment, not float on it. A soft contact
+   shadow plus a low ambient pool grounds it without adding any WebGL cost. */
+.robot-stage { position: relative; }
+.robot-stage::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: 6%;
+  width: 58%;
+  height: 12%;
+  transform: translateX(-50%);
+  pointer-events: none;
+  background: radial-gradient(
+    closest-side,
+    rgba(0, 0, 0, 0.55),
+    rgba(0, 0, 0, 0.22) 55%,
+    rgba(0, 0, 0, 0) 100%
+  );
+  filter: blur(6px);
+}
+/* ambient pool: the environment's own light collecting under the figure */
+.robot-stage::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: 2%;
+  width: 78%;
+  height: 34%;
+  transform: translateX(-50%);
+  pointer-events: none;
+  background: radial-gradient(
+    closest-side,
+    rgba(120, 170, 235, 0.10),
+    rgba(120, 170, 235, 0.04) 50%,
+    rgba(120, 170, 235, 0) 100%
+  );
+}
+
+/* Text links: a directional underline that draws in from the leading edge.
+   Elegant, and it never shifts layout. */
+.link {
+  position: relative;
+  color: var(--color-ink-dim);
+  transition: color 0.22s ease-out;
+}
+.link:hover { color: var(--color-ink); }
+.link::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -2px;
+  height: 1px;
+  background: currentColor;
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform 0.32s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.link:hover::after,
+.link:focus-visible::after { transform: scaleX(1); }
+
+@media (prefers-reduced-motion: reduce) {
+  .link::after { transition: none; }
+}
+
+
+/* --- route state change ------------------------------------------------
+   The incoming view resolves from a slightly compressed, lowered position.
+   Transform + opacity only, ~340ms, never blocking interaction. */
+.route-state { will-change: auto; }
+@keyframes helios-route-resolve {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 10px, 0) scale(0.994);
+    filter: saturate(0.85);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+    filter: saturate(1);
+  }
+}
+.route-resolve {
+  animation: helios-route-resolve 0.34s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .route-resolve { animation: none; }
+}
+
+
+/* ==================================================================
+   ATTENTION REORGANISATION
+   When the visitor attends one signal, the page restructures around it:
+   unrelated content recedes, the attended signal keeps full presence.
+   Driven by a single attribute on <html> written from the stage store,
+   so it costs one style recalculation per attention change — not a
+   render, and not per frame.
+   ================================================================== */
+
+:root { --attn-recede: 1; }
+html[data-attn="1"] { --attn-recede: 0.42; }
+
+/* Sections that carry supporting prose recede; signals never do. */
+html[data-attn="1"] .attn-recede {
+  opacity: var(--attn-recede);
+  transition: opacity 0.55s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.attn-recede { transition: opacity 0.55s cubic-bezier(0.16, 1, 0.3, 1); }
+
+@media (prefers-reduced-motion: reduce) {
+  html[data-attn="1"] .attn-recede { opacity: 1; }
+}

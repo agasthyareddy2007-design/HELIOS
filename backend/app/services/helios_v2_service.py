@@ -18,7 +18,7 @@ from ml.feature_contract import FeatureVector
 
 class HeliosV2Service:
     def __init__(self):
-        self.artifact_path = PROJECT_ROOT / "ml" / "artifacts" / "lockedtest_v2_20260915_184718" / "model_xgboost_v2.pkl"
+        self.artifact_path = PROJECT_ROOT / "ml" / "artifacts" / "lockedtest_v2_20260915_184718" / "helios.pkl"
         self.xgb_cand = None
         self.db = get_db_manager()
         self.builder = DatasetBuilder(self.db)
@@ -100,9 +100,16 @@ class HeliosV2Service:
             "valid_time": valid_time.isoformat() + "Z",
             "lead_time_hours": lead_time_hours,
             "variable": "temperature_2m_c",
+            "units": "c",
+            "live_strategy": "HELIOS V2 (XGBoost)",
             "helios_forecast": round(blended_value, 2) if blended_value is not None else None,
+            "helios_temperature_c": round(blended_value, 2) if blended_value is not None else None,
             "nwp_forecasts": {m: round(v, 2) for m, v in forecasts.items() if v is not None},
+            "nwp_forecasts_c": {m: round(v, 2) for m, v in forecasts.items() if v is not None},
+            "nwp_availability": {m: m in forecasts and forecasts[m] is not None for m in ["gfs", "ifs", "icon"]},
             "model_weights": {m: round(w, 4) for m, w in weights_dict.items() if w > 0.0},
+            "nwp_weights": {m: round(w, 4) for m, w in weights_dict.items() if w > 0.0},
+            "nwp_weights_note": "XGBoost inverse-error weighting (V2).",
             "reliability_metrics": {
                 m: {
                     "expected_absolute_error": round(rp.expected_absolute_error, 3) 
@@ -124,13 +131,26 @@ class HeliosV2Service:
 
     def health(self) -> dict:
         self.force_load()
-        return {
+        out = {
             "status": "ok",
             "strategy": "XGBoost",
             "generation": "v2",
             "models_loaded": ["gfs", "ifs", "icon"],
             "artifact": self.artifact_path.name
         }
+        
+        # Read dynamic Tailscale Funnel URL
+        import subprocess
+        try:
+            ts_status = subprocess.check_output(["tailscale", "status", "--json"], text=True)
+            import json
+            ts_data = json.loads(ts_status)
+            dns_name = ts_data.get("Self", {}).get("DNSName", "").strip(".")
+            out["public_url"] = f"https://{dns_name}" if dns_name else None
+        except Exception:
+            out["public_url"] = None
+
+        return out
 
     def models(self) -> dict:
         return {

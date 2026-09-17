@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
+  <rect width="32" height="32" fill="#04070c"/>
+  <!-- three NWP inputs converging into the HELIOS core -->
+  <path d="M4 8 C14 8, 16 16, 24 16" fill="none" stroke="#4da3ff" stroke-width="2" stroke-linecap="round" opacity="0.9"/>
+  <path d="M4 16 L24 16" fill="none" stroke="#8b7cff" stroke-width="2" stroke-linecap="round" opacity="0.9"/>
+  <path d="M4 24 C14 24, 16 16, 24 16" fill="none" stroke="#2fd6b4" stroke-width="2" stroke-linecap="round" opacity="0.9"/>
+  <circle cx="24.5" cy="16" r="5" fill="#ffc773"/>
+  <circle cx="24.5" cy="16" r="2.2" fill="#fff2d6"/>
+</svg>
