@@ -1,7 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 
-const UPSTREAM = process.env.HELIOS_API_BASE ?? "http://127.0.0.1:8011";
 const TIMEOUT_MS = Number(process.env.HELIOS_API_TIMEOUT_MS ?? 15000);
+
+async function resolveUpstream(): Promise<string> {
+  const envBase = process.env.HELIOS_API_BASE;
+  if (!envBase) {
+    // Fallback to local dev for robustness if env is missing
+    return "http://127.0.0.1:8011";
+  }
+  return envBase.replace(/\/$/, ""); // Strip trailing slash
+}
 
 export async function POST(req: NextRequest) {
   try {
@@ -14,7 +22,13 @@ export async function POST(req: NextRequest) {
     const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
 
     // Test the key against /v1/locations which requires authentication but reads NO disk state
-    const testUrl = `${UPSTREAM}/v1/locations`;
+    let testUrl: string;
+    try {
+      const upstreamBase = await resolveUpstream();
+      testUrl = `${upstreamBase}/v1/locations`;
+    } catch {
+      return NextResponse.json({ error: "Backend unconfigured" }, { status: 503 });
+    }
     let res: Response;
     try {
       res = await fetch(testUrl, {
