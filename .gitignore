@@ -32,6 +32,7 @@ env/
 
 # Node.js / Next.js / Frontend
 node_modules/
+!frontend/src/lib/
 .next/
 out/
 .cache/
