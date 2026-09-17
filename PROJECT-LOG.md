@@ -10439,3 +10439,12 @@ HELIOS V2 is now clean, organized, and ready for GitHub and Vercel deployment.
   - Validated FastAPI backend inference and Next.js frontend build against the new filename.
   - Completed final file deletion of identified obsolete packages (`nwp/`, `observation/`, `scheduling/`, `blending/`, `config/`, `evaluation/`) resolving authorization consistency. Empty module directories removed.
   - Tailscale Funnel and frontend build verified.
+
+- [2026-09-18 08:45:00 IST] PUBLIC README & DOCUMENTATION FINALIZATION:
+  - Replaced outdated prototype/scaffold README with comprehensive, public-facing HELIOS V2 documentation.
+  - Removed outdated scaffold phase indicators, obsolete Docker/Podman/Cloudflare instructions, and placeholder contact information (`team@helios.example.com`).
+  - Formally documented V2 XGBoost error-weighted blending architecture over GFS, IFS, and ICON.
+  - Accurately reported strictly held-out V2 test performance (8.65% MAE reduction vs. Statistical Average, 1.626°C vs. 1.780°C on 493,473 samples).
+  - Explicitly specified frozen V2 model location (`ml/artifacts/lockedtest_v2_20260915_184718/helios.pkl`) and SHA256 checksum (`b9ddcf428fea41f27a329e8e00dcc4b197ad9c71c634c8b64deb2f36877d2af2`).
+  - Documented active Tailscale Funnel ingress (`https://cachyos-agasthya.tail1cd259.ts.net`) and Vercel Next.js 16 deployment topology.
+  - Audited and categorized documents in `docs/`, flagging historical transfer documents with provenance headers.

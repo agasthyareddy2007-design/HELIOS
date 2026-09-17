@@ -1,4 +1,6 @@
-# HELIOS V1 — Portability Guide
+# HELIOS Portability Guide (Historical V1 Architecture Note)
+
+> **HISTORICAL DOCUMENT**: This guide documents the original physical SSD transfer and runtime portability audit conducted during early V1 migration. For the finalized V2 deployment architecture and run instructions, refer to the main repository `README.md`.
 
 How to move the entire `/home/agasthya/HELIOS` folder to an SSD and run it on
 another Linux machine (target: **CachyOS**, ~4 GB RAM, NVIDIA 4 GB VRAM) with as

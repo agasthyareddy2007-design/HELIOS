@@ -1,7 +1,7 @@
 # HELIOS V2 FINAL END-TO-END AUDIT
 
 ## Phase 1: V2 Model Integrity
-- **Artifact Verified**: `/home/agasthya/HELIOS/ml/artifacts/lockedtest_v2_20260915_184718/model_xgboost_v2.pkl`
+- **Artifact Verified**: `/home/agasthya/HELIOS/ml/artifacts/lockedtest_v2_20260915_184718/helios.pkl`
 - **Integrity**: Exists and has a SHA256 checksum matching `b9ddcf428fea41f27a329e8e00dcc4b197ad9c71c634c8b64deb2f36877d2af2`.
 - **Tree Count**: 100 boosted trees per model (GFS/IFS/ICON) confirmed natively.
 - **Evaluation Bound**: Test block exclusively bound to `>= 2026-06-07T00:00:00`. V1 baseline (1.700 SA) was correctly beaten by V2 MAE 1.626 (8.65% improvement).
@@ -51,7 +51,7 @@
 ### Maintain (Required Operational Backend)
 - `backend/app/*` (Core API and Services)
 - `frontend/*` (UI Layer)
-- `ml/artifacts/lockedtest_v2_20260915_184718/model_xgboost_v2.pkl` (Frozen Model)
+- `ml/artifacts/lockedtest_v2_20260915_184718/helios.pkl` (Frozen Model)
 - `database/connection.py`, `database/schema/helios_schema.py`
 - `nwp/*` (Live NWP adapters)
 ### Disposable (Temporary Iteration/Patch Scaffolding)
