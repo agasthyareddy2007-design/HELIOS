@@ -1,5 +1,6 @@
 // In-memory session store for API keys.
-// Kept in globalThis to survive Hot Module Replacement in Next.js dev server.
+// DEPRECATED: Vercel Serverless environments do not persist global state reliably across function instances.
+// We will transition to storing the capability token in the HTTP-only cookie directly.
 
 const globalAny: any = global;
 

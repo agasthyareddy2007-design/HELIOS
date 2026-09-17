@@ -188,7 +188,11 @@ function ForecastPageContent() {
                   ? `live · ${liveStatus.data.selected_cycle ? formatValid(liveStatus.data.selected_cycle) : ""}`
                   : liveStatus.data
                     ? "live feed unavailable"
-                    : "connecting…"}
+                    : liveStatus.error
+                      ? liveStatus.error.kind === "unauthorized"
+                        ? "session expired"
+                        : "upstream offline"
+                      : "connecting…"}
               </span>
             </div>
           </header>

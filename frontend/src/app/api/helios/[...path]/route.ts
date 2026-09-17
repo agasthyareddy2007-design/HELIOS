@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import { sessionStore } from "@/lib/sessionStore";
 
 /**
  * Server-side proxy to the HELIOS V1 API.
@@ -49,11 +48,8 @@ export async function GET(
     );
   }
 
-  const sessionCookie = req.cookies.get("helios_session")?.value;
-  let apiKey = "";
-  if (sessionCookie) {
-    apiKey = sessionStore.get(sessionCookie) ?? "";
-  }
+  // Retrieve API key directly from HTTP-only cookie (Serverless friendly)
+  const apiKey = req.cookies.get("helios_session")?.value ?? "";
 
   if (!apiKey && endpoint !== "health") {
     return NextResponse.json({ error: "unauthorized", message: "Valid API key required" }, { status: 401 });

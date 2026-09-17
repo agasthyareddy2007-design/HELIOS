@@ -1,6 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import { sessionStore } from "@/lib/sessionStore";
-import crypto from "crypto";
 
 const UPSTREAM = process.env.HELIOS_API_BASE ?? "http://127.0.0.1:8011";
 const TIMEOUT_MS = Number(process.env.HELIOS_API_TIMEOUT_MS ?? 15000);
@@ -38,12 +36,10 @@ export async function POST(req: NextRequest) {
        return NextResponse.json({ error: "Backend error during validation" }, { status: 502 });
     }
 
-    // Key is valid. Create a session.
-    const sessionId = crypto.randomUUID();
-    sessionStore.set(sessionId, apiKey);
-
+    // Vercel Serverless Fix: Store the valid API key directly in the HTTP-only cookie.
+    // In-memory Maps (sessionStore) reset across Edge/Serverless function invocations.
     const response = NextResponse.json({ ok: true });
-    response.cookies.set("helios_session", sessionId, {
+    response.cookies.set("helios_session", apiKey, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
