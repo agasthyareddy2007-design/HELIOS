@@ -91,7 +91,15 @@ async function get<T>(
 
   let res: Response;
   try {
-    res = await fetch(url, { signal, headers: { Accept: "application/json" } });
+    res = await fetch(url, {
+      signal,
+      headers: {
+        Accept: "application/json",
+        "Cache-Control": "no-store",
+        Pragma: "no-cache",
+      },
+      cache: "no-store"
+    });
   } catch (err) {
     if (err instanceof DOMException && err.name === "AbortError") throw err;
     throw new HeliosApiError("offline", "Network request to the HELIOS proxy failed.");

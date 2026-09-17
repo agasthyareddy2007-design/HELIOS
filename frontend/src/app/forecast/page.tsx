@@ -108,7 +108,7 @@ function ForecastPageContent() {
         const res = await heliosApi.resolve(lat, lon, 1, ac.signal);
         selectStation(res.resolved);
         setLeadHours(null);
-      } catch {
+      } catch (err) {
       }
     },
     [selectStation, setLeadHours],

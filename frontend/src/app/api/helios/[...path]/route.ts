@@ -88,7 +88,14 @@ export async function GET(
       return NextResponse.json({ error: "bad_gateway", message: "HELIOS API returned a non-JSON response." }, { status: 502 });
     }
 
-    return NextResponse.json(body, { status: upstream.status });
+    return NextResponse.json(body, {
+      status: upstream.status,
+      headers: {
+        "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate",
+        "Pragma": "no-cache",
+        "Expires": "0"
+      }
+    });
   } catch (err) {
     const aborted = err instanceof Error && err.name === "AbortError";
     if (aborted && req.signal.aborted) {

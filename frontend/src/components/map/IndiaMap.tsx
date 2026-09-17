@@ -160,7 +160,6 @@ export function IndiaMap({
   );
 
   const onPointerDown = (e: React.PointerEvent<SVGSVGElement>) => {
-    (e.currentTarget as Element).setPointerCapture?.(e.pointerId);
     drag.current = { x: e.clientX, y: e.clientY, cx: view.cx, cy: view.cy };
     moved.current = false;
     setDragging(true);
@@ -174,15 +173,21 @@ export function IndiaMap({
     const r = svg.getBoundingClientRect();
     const dx = ((e.clientX - drag.current.x) / r.width) * vb.w;
     const dy = ((e.clientY - drag.current.y) / r.height) * vb.h;
-    if (Math.abs(e.clientX - drag.current.x) + Math.abs(e.clientY - drag.current.y) > 3) moved.current = true;
+    if (Math.abs(e.clientX - drag.current.x) + Math.abs(e.clientY - drag.current.y) > 6) {
+      moved.current = true;
+    }
     setView((v) => ({ ...v, cx: drag.current!.cx - dx, cy: drag.current!.cy - dy }));
   };
-  const onPointerUp = (e: React.PointerEvent<SVGSVGElement>) => {
-    (e.currentTarget as Element).releasePointerCapture?.(e.pointerId);
-    const wasDrag = moved.current;
+  const onPointerUp = () => {
     drag.current = null;
     setDragging(false);
-    if (wasDrag) return;
+  };
+
+  const handleClick = (e: React.MouseEvent<SVGSVGElement>) => {
+    if (moved.current) {
+      moved.current = false;
+      return;
+    }
     const at = clientToViewBox(e.clientX, e.clientY);
     if (!at) return;
     const { lat, lon } = vbToCoord(at.x, at.y);
@@ -219,6 +224,7 @@ export function IndiaMap({
         onPointerDown={onPointerDown}
         onPointerMove={onPointerMove}
         onPointerUp={onPointerUp}
+        onClick={handleClick}
         onPointerLeave={() => {
           drag.current = null;
           setDragging(false);
