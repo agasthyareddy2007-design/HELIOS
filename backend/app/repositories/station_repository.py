@@ -91,7 +91,7 @@ def _isd_index() -> Dict[str, Dict[str, Any]]:
     Parse ghcnh-station-list.csv into {station_id: {name, latitude, longitude, elevation_m}}.
     """
     out = {}
-    GHCN_STATION_LIST = PROJECT_ROOT / "data" / "raw" / "ghcnh_2026" / "ghcnh-station-list.csv"
+    GHCN_STATION_LIST = PROJECT_ROOT / "data" / "metadata" / "ghcnh-station-list.csv"
     if not GHCN_STATION_LIST.exists():
         return out
     import csv
