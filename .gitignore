@@ -87,6 +87,8 @@ models/archive/
 
 # Except explicitly allowlisted V2 inference artifacts
 !ml/artifacts/lockedtest_v2_20260915_184718/*.pkl
+!ml/artifacts/kernel_regression/*.pkl
+!ml/artifacts/mlp/*.pkl
 
 # Logs
 logs/
@@ -122,3 +124,5 @@ docker-compose.override.yml
 data/runtime/
 project.db
 .claude/
+.vercel
+.env*

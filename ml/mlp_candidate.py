@@ -47,6 +47,45 @@ from ml.candidate_interface import (
     EvaluationMetrics
 )
 from ml.preprocessing import FeaturePreprocessor
+import torch
+import torch.nn as nn
+
+
+class MLPNetwork(nn.Module):
+    def __init__(self, input_dim: int, hidden_layers: List[int], dropout_rate: float, activation: str):
+        super().__init__()
+
+        layers = []
+        prev_dim = input_dim
+
+        # Hidden layers
+        for hidden_dim in hidden_layers:
+            layers.append(nn.Linear(prev_dim, hidden_dim))
+
+            # Activation
+            if activation == 'relu':
+                layers.append(nn.ReLU())
+            elif activation == 'tanh':
+                layers.append(nn.Tanh())
+            elif activation == 'sigmoid':
+                layers.append(nn.Sigmoid())
+
+            # Dropout
+            if dropout_rate > 0:
+                layers.append(nn.Dropout(dropout_rate))
+
+            prev_dim = hidden_dim
+
+        # Output layer (single output: expected absolute error)
+        layers.append(nn.Linear(prev_dim, 1))
+
+        # Ensure positive output (reliability must be >= 0)
+        layers.append(nn.ReLU())
+
+        self.network = nn.Sequential(*layers)
+
+    def forward(self, x):
+        return self.network(x)
 
 
 logger = logging.getLogger(__name__)
@@ -133,46 +172,7 @@ class MLPCandidate(BaseCandidateModel):
         Returns:
             PyTorch MLP model
         """
-        import torch
-        import torch.nn as nn
-
-        class MLP(nn.Module):
-            def __init__(self, input_dim: int, hidden_layers: List[int], dropout_rate: float, activation: str):
-                super().__init__()
-
-                layers = []
-                prev_dim = input_dim
-
-                # Hidden layers
-                for hidden_dim in hidden_layers:
-                    layers.append(nn.Linear(prev_dim, hidden_dim))
-
-                    # Activation
-                    if activation == 'relu':
-                        layers.append(nn.ReLU())
-                    elif activation == 'tanh':
-                        layers.append(nn.Tanh())
-                    elif activation == 'sigmoid':
-                        layers.append(nn.Sigmoid())
-
-                    # Dropout
-                    if dropout_rate > 0:
-                        layers.append(nn.Dropout(dropout_rate))
-
-                    prev_dim = hidden_dim
-
-                # Output layer (single output: expected absolute error)
-                layers.append(nn.Linear(prev_dim, 1))
-
-                # Ensure positive output (reliability must be >= 0)
-                layers.append(nn.ReLU())
-
-                self.network = nn.Sequential(*layers)
-
-            def forward(self, x):
-                return self.network(x)
-
-        return MLP(
+        return MLPNetwork(
             input_dim=input_dim,
             hidden_layers=self.config.hidden_layers,
             dropout_rate=self.config.dropout_rate,

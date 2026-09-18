@@ -536,14 +536,14 @@ class LiveForecastService:
         )
 
         # We return the response adapted to the LiveForecast protocol
-        candidates = {
+        candidates = res.get("candidates", {
             "xgboost": {
                 "temperature_c": res["helios_forecast"],
                 "weights": res.get("model_weights", {}),
                 "available": res["helios_forecast"] is not None,
                 "selected": True
             }
-        }
+        })
 
         return {
             "weights": res.get("model_weights", {}),

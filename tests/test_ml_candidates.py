@@ -38,11 +38,14 @@ from ml.mlp_candidate import MLPCandidate, MLPConfig
 
 # Fixtures (no pytest required)
 
+import pytest
+@pytest.fixture
 def feature_contract():
     """Feature contract instance."""
     return FeatureContract()
 
 
+@pytest.fixture
 def synthetic_training_samples():
     """Generate synthetic training samples for testing."""
     samples = []

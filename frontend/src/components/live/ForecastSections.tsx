@@ -225,7 +225,7 @@ export function ModelTrust({ horizon }: { horizon: LiveHorizon | null }) {
 export function HeliosOutput({ horizon }: { horizon: LiveHorizon | null }) {
   const reduce = useReducedMotion();
   const t = horizon?.helios_temperature_c ?? null;
-  const selected = horizon?.selected_candidate ?? "mlp";
+  const selected = horizon?.selected_candidate ?? "xgboost";
   const method = CANDIDATE_META[selected]?.label ?? "MLP";
 
   return (

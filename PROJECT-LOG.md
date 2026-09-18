@@ -10448,3 +10448,15 @@ HELIOS V2 is now clean, organized, and ready for GitHub and Vercel deployment.
   - Explicitly specified frozen V2 model location (`ml/artifacts/lockedtest_v2_20260915_184718/helios.pkl`) and SHA256 checksum (`b9ddcf428fea41f27a329e8e00dcc4b197ad9c71c634c8b64deb2f36877d2af2`).
   - Documented active Tailscale Funnel ingress (`https://cachyos-agasthya.tail1cd259.ts.net`) and Vercel Next.js 16 deployment topology.
   - Audited and categorized documents in `docs/`, flagging historical transfer documents with provenance headers.
+
+## 2026-09-18 14:00 IST — HELIOS V2 Candidate Restoration & Cleanup
+
+### Summary
+Honestly restored the three-candidate presentation (Kernel Regression, XGBoost, MLP) to the HELIOS frontend using correctly bounded training on the canonical 24-feature vector. Cleaned up all obsolete training and reconstruction scripts while preserving the original locked V2 XGBoost model byte-for-byte.
+
+### Actions
+- **Restored Candidates**: Retrained and serialized `ml/artifacts/kernel_regression/kernel_regression.pkl` and `ml/artifacts/mlp/mlp.pkl` using pre-2026-06-07 data without touching the locked test methodology.
+- **Backend Inference Integration**: Modified `backend/app/services/helios_v2_service.py` to evaluate all three candidates concurrently, mapping XGBoost as the selected "helios_temperature_c" production output.
+- **Frontend Presentation Restored**: Ensured Vercel frontend correctly receives the newly mapped candidates across all streams inside `CandidateArbitrationFlow.tsx`.
+- **Integrity Kept**: Locked XGBoost artifact (`ml/artifacts/lockedtest_v2_20260915_184718/helios.pkl`) maintained unchanged (`SHA256: b9ddcf428fea41f27a329e8e00dcc4b197ad9c71c634c8b64deb2f36877d2af2`).
+- **Post-Training Cleanup**: Permanently deleted temporary scripts such as `ml/test_mlp_timing.py`, `ml/test_stream_timing.py`, `scripts/train_kernel_mlp_v2.py`, and `scripts/reconstruct_stations.py`. Purged duplicate data formats (`data/raw/`) and cache residue (`__pycache__`).

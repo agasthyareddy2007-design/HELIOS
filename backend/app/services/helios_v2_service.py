@@ -19,7 +19,11 @@ from ml.feature_contract import FeatureVector
 class HeliosV2Service:
     def __init__(self):
         self.artifact_path = PROJECT_ROOT / "ml" / "artifacts" / "lockedtest_v2_20260915_184718" / "helios.pkl"
+        self.kernel_artifact_path = PROJECT_ROOT / "ml" / "artifacts" / "kernel_regression" / "kernel_regression.pkl"
+        self.mlp_artifact_path = PROJECT_ROOT / "ml" / "artifacts" / "mlp" / "mlp.pkl"
         self.xgb_cand = None
+        self.kernel_cand = None
+        self.mlp_cand = None
         self.db = get_db_manager()
         self.builder = DatasetBuilder(self.db)
         self.feature_builder = FeatureBuilder()
@@ -31,6 +35,12 @@ class HeliosV2Service:
                 raise FileNotFoundError(f"Missing V2 artifact at {self.artifact_path}")
             with open(self.artifact_path, "rb") as f:
                 self.xgb_cand = pickle.load(f)
+        if self.kernel_cand is None and self.kernel_artifact_path.exists():
+            with open(self.kernel_artifact_path, "rb") as f:
+                self.kernel_cand = pickle.load(f)
+        if self.mlp_cand is None and self.mlp_artifact_path.exists():
+            with open(self.mlp_artifact_path, "rb") as f:
+                self.mlp_cand = pickle.load(f)
 
     def force_load(self):
         """Forces the loading of the model to keep memory prepared."""
@@ -78,21 +88,56 @@ class HeliosV2Service:
             historical_reliability=historical_dict
         )
         
-        # 3. Predict expected errors and compute inverse-error weights
+        # 3. Predict expected errors and compute inverse-error weights for XGBoost (Selected)
         weights_pred = self.xgb_cand.get_weights(features=fv, models=list(forecasts.keys()))
         weights_dict = {"gfs": weights_pred.gfs_weight, "ifs": weights_pred.ifs_weight, "icon": weights_pred.icon_weight}
-        
-        # 4. Enforce V2 blending math: blend = sum(weight_i * forecast_i) (weights are already 0-1 and sum to 1 in get_weights)
+
+        # 4. Enforce V2 blending math: blend = sum(weight_i * forecast_i)
         blended_value = 0.0
         active_models = 0
         for m, w in weights_dict.items():
             if m in forecasts and forecasts[m] is not None:
                 blended_value += w * forecasts[m]
                 active_models += 1
-                
+
         if active_models == 0:
-            # Fallback if no valid model data
             blended_value = None
+
+        # Calculate Kernel candidate forecast
+        kernel_weights_dict = None
+        kernel_blend = None
+        if self.kernel_cand is not None:
+            try:
+                kw_pred = self.kernel_cand.get_weights(features=fv, models=list(forecasts.keys()))
+                kernel_weights_dict = {"gfs": kw_pred.gfs_weight, "ifs": kw_pred.ifs_weight, "icon": kw_pred.icon_weight}
+                kernel_val = 0.0
+                k_active = 0
+                for m, w in kernel_weights_dict.items():
+                    if m in forecasts and forecasts[m] is not None:
+                        kernel_val += w * forecasts[m]
+                        k_active += 1
+                if k_active > 0:
+                    kernel_blend = round(kernel_val, 2)
+            except Exception:
+                pass
+
+        # Calculate MLP candidate forecast
+        mlp_weights_dict = None
+        mlp_blend = None
+        if self.mlp_cand is not None:
+            try:
+                mw_pred = self.mlp_cand.get_weights(features=fv, models=list(forecasts.keys()))
+                mlp_weights_dict = {"gfs": mw_pred.gfs_weight, "ifs": mw_pred.ifs_weight, "icon": mw_pred.icon_weight}
+                mlp_val = 0.0
+                m_active = 0
+                for m, w in mlp_weights_dict.items():
+                    if m in forecasts and forecasts[m] is not None:
+                        mlp_val += w * forecasts[m]
+                        m_active += 1
+                if m_active > 0:
+                    mlp_blend = round(mlp_val, 2)
+            except Exception:
+                pass
 
         # Format output mirroring V1 API for frontend compatibility
         result = {
@@ -110,9 +155,29 @@ class HeliosV2Service:
             "model_weights": {m: round(w, 4) for m, w in weights_dict.items() if w > 0.0},
             "nwp_weights": {m: round(w, 4) for m, w in weights_dict.items() if w > 0.0},
             "nwp_weights_note": "XGBoost inverse-error weighting (V2).",
+            "candidates": {
+                "kernel": {
+                    "temperature_c": kernel_blend,
+                    "weights": {m: round(w, 4) for m, w in kernel_weights_dict.items() if w > 0.0} if kernel_weights_dict else None,
+                    "available": kernel_blend is not None,
+                    "selected": False,
+                },
+                "xgboost": {
+                    "temperature_c": round(blended_value, 2) if blended_value is not None else None,
+                    "weights": {m: round(w, 4) for m, w in weights_dict.items() if w > 0.0},
+                    "available": blended_value is not None,
+                    "selected": True,
+                },
+                "mlp": {
+                    "temperature_c": mlp_blend,
+                    "weights": {m: round(w, 4) for m, w in mlp_weights_dict.items() if w > 0.0} if mlp_weights_dict else None,
+                    "available": mlp_blend is not None,
+                    "selected": False,
+                }
+            },
             "reliability_metrics": {
                 m: {
-                    "expected_absolute_error": round(rp.expected_absolute_error, 3) 
+                    "expected_absolute_error": round(rp.expected_absolute_error, 3)
                 }
                 for m, rp in {"gfs": weights_pred.gfs_reliability, "ifs": weights_pred.ifs_reliability, "icon": weights_pred.icon_reliability}.items()
             }
