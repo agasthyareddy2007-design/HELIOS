@@ -21,14 +21,16 @@ export async function POST(req: NextRequest) {
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
 
-    // Test the key against /v1/locations which requires authentication but reads NO disk state
+    // Test the key against /v1/usage which is extremely lightweight (45 bytes)
+    // and requires authentication but implies NO database scans.
     let testUrl: string;
     try {
       const upstreamBase = await resolveUpstream();
-      testUrl = `${upstreamBase}/v1/locations`;
+      testUrl = `${upstreamBase}/v1/usage`;
     } catch {
       return NextResponse.json({ error: "Backend unconfigured" }, { status: 503 });
     }
+
     let res: Response;
     try {
       res = await fetch(testUrl, {
@@ -36,7 +38,14 @@ export async function POST(req: NextRequest) {
         signal: controller.signal,
         cache: "no-store",
       });
-    } catch {
+      // CRITICAL VERCEL SERVERLESS FIX:
+      // We must explicitly consume the body (`res.text()`) even if we don't need it.
+      // Failing to consume the body in Node.js 18+ (undici) leaves the TCP connection
+      // in a hanging state, leading to BrokenPipeErrors on the backend and 502/connection
+      // pool exhaustion bugs on Vercel on subsequent validation attempts.
+      await res.text().catch(() => "");
+    } catch (err) {
+      // Safely ignore aborts from client or genuine network errors
       return NextResponse.json({ error: "Backend unreachable" }, { status: 502 });
     } finally {
       clearTimeout(timer);
