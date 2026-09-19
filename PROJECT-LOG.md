@@ -10460,3 +10460,23 @@ Honestly restored the three-candidate presentation (Kernel Regression, XGBoost, 
 - **Frontend Presentation Restored**: Ensured Vercel frontend correctly receives the newly mapped candidates across all streams inside `CandidateArbitrationFlow.tsx`.
 - **Integrity Kept**: Locked XGBoost artifact (`ml/artifacts/lockedtest_v2_20260915_184718/helios.pkl`) maintained unchanged (`SHA256: b9ddcf428fea41f27a329e8e00dcc4b197ad9c71c634c8b64deb2f36877d2af2`).
 - **Post-Training Cleanup**: Permanently deleted temporary scripts such as `ml/test_mlp_timing.py`, `ml/test_stream_timing.py`, `scripts/train_kernel_mlp_v2.py`, and `scripts/reconstruct_stations.py`. Purged duplicate data formats (`data/raw/`) and cache residue (`__pycache__`).
+
+## 2026-09-20 03:50 IST — Branch & Vercel Deployment Strategy for SIH Public Demo
+
+### Summary
+Established a dual-branch deployment strategy to decouple the public-facing demonstration frontend from the protected canonical internal version.
+
+### Actions & Architecture
+- **Canonical `main` Preserved**: Maintained `main` branch with the full client-supplied `X-API-Key` authentication requirement and login gate (`AuthGate.tsx`), preserving complete internal access controls and original behavior.
+- **`public-demo` Branch Created**: Maintained `public-demo` branch holding the same-origin reverse proxy (`/api/helios/*`) with server-side credential injection (`HELIOS_FRONTEND_API_KEY`) targeting the upstream backend (`HELIOS_API_BASE` / `HELIOS_BACKEND_URL`).
+- **Vercel Topology**:
+  - `main` branch connects to Vercel **Production** deployment (`https://helios-forecast.vercel.app`).
+  - `public-demo` branch connects to Vercel **Preview** deployment (or dedicated alias `https://helios-demo.vercel.app`).
+  - No secrets or API keys are placed in `NEXT_PUBLIC_*` variables.
+- **Backend Provisioning Plan**: Google Cloud Compute Engine backend deployment is explicitly deferred to a separate deployment task.
+- **Verification Results**:
+  - `main`: API-key wall intact, `npm run build` succeeds (9/9 static pages generated).
+  - `public-demo`: Same-origin proxy verified over `/api/helios/health`, `/api/helios/locations`, and `/api/helios/live/forecast` (all 3 candidates: Kernel, XGBoost, MLP verified across 6h, 24h, 48h, 72h, 120h).
+  - Zero secrets in client JS bundles or DOM.
+  - Model integrity verified (`b9ddcf428fea41f27a329e8e00dcc4b197ad9c71c634c8b64deb2f36877d2af2`).
+
