@@ -108,7 +108,7 @@ function ForecastPageContent() {
         const res = await heliosApi.resolve(lat, lon, 1, ac.signal);
         selectStation(res.resolved);
         setLeadHours(null);
-      } catch (err) {
+      } catch {
       }
     },
     [selectStation, setLeadHours],
@@ -149,17 +149,7 @@ function ForecastPageContent() {
                 <Link href="/contact" className="inline-flex min-h-[44px] items-center font-mono text-[12px] uppercase tracking-[0.14em] text-[var(--ink-dim)] transition-colors hover:text-[var(--ink)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--helios-amber)]">
                   Contact
                 </Link>
-              
-                <button 
-                  onClick={async () => {
-                    await fetch("/api/auth/logout", { method: "POST" });
-                    window.location.reload();
-                  }}
-                  className="inline-flex min-h-[44px] items-center font-mono text-[12px] uppercase tracking-[0.14em] text-[var(--ink-dim)] transition-colors hover:text-[var(--ink)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--helios-amber)] ml-4"
-                >
-                  Logout
-                </button>
-  </nav>
+              </nav>
             </div>
             {/* System state readout: the instrument reports its own condition. */}
             <div className="flex items-center gap-2.5" role="status" aria-live="polite">
@@ -273,8 +263,13 @@ export default function ForecastPage() {
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    let canceled = false;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (!mounted) return;
+    let canceled = false;
     window.scrollTo(0, 0);
     document.body.style.overflow = 'hidden';
 
@@ -293,7 +288,7 @@ export default function ForecastPage() {
       canceled = true;
       document.body.style.overflow = '';
     };
-  }, []);
+  }, [mounted]);
 
   useEffect(() => {
     if (authStatus === "authenticated" && introDone) {

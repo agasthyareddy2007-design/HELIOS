@@ -48,8 +48,14 @@ export async function GET(
     );
   }
 
-  // Retrieve API key directly from HTTP-only cookie (Serverless friendly)
-  const apiKey = req.cookies.get("helios_session")?.value ?? "";
+  const internalApiKey = process.env.HELIOS_FRONTEND_API_KEY || process.env.HELIOS_API_KEY || "";
+
+  // Retrieve API key from HTTP-only cookie if provided (for potential admin/authenticated sessions)
+  const sessionApiKey = req.cookies.get("helios_session")?.value ?? "";
+
+  // We prioritize the internal server API key for allowlisted public endpoints,
+  // falling back to the session API key if it exists.
+  const apiKey = internalApiKey || sessionApiKey;
 
   if (!apiKey && endpoint !== "health") {
     return NextResponse.json({ error: "unauthorized", message: "Valid API key required" }, { status: 401 });
@@ -60,7 +66,7 @@ export async function GET(
   
   try {
     upstreamBase = await resolveUpstream();
-  } catch (err) {
+  } catch {
     return NextResponse.json({ error: "api_offline", message: "Failed to resolve backend locator URL." }, { status: 503 });
   }
 

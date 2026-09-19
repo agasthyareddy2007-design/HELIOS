@@ -62,6 +62,7 @@ function useResource<T>(
     if (!enabled) return;
 
     // FIX: Clear state immediately when deps change so we don't render stale data.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setState({ data: null, error: null, settled: false });
 
     const controller = new AbortController();

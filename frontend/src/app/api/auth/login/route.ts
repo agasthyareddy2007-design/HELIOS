@@ -44,7 +44,7 @@ export async function POST(req: NextRequest) {
       // in a hanging state, leading to BrokenPipeErrors on the backend and 502/connection
       // pool exhaustion bugs on Vercel on subsequent validation attempts.
       await res.text().catch(() => "");
-    } catch (err) {
+    } catch {
       // Safely ignore aborts from client or genuine network errors
       return NextResponse.json({ error: "Backend unreachable" }, { status: 502 });
     } finally {
@@ -54,7 +54,7 @@ export async function POST(req: NextRequest) {
     if (res.status === 401 || res.status === 403) {
       return NextResponse.json({ error: "Invalid API key" }, { status: 401 });
     }
-    
+
     if (!res.ok) {
        return NextResponse.json({ error: "Backend error during validation" }, { status: 502 });
     }
@@ -70,7 +70,7 @@ export async function POST(req: NextRequest) {
       path: "/",
     });
     return response;
-  } catch (err) {
+  } catch {
     return NextResponse.json({ error: "Validation failed" }, { status: 500 });
   }
 }

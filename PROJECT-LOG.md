@@ -10460,3 +10460,16 @@ Honestly restored the three-candidate presentation (Kernel Regression, XGBoost, 
 - **Frontend Presentation Restored**: Ensured Vercel frontend correctly receives the newly mapped candidates across all streams inside `CandidateArbitrationFlow.tsx`.
 - **Integrity Kept**: Locked XGBoost artifact (`ml/artifacts/lockedtest_v2_20260915_184718/helios.pkl`) maintained unchanged (`SHA256: b9ddcf428fea41f27a329e8e00dcc4b197ad9c71c634c8b64deb2f36877d2af2`).
 - **Post-Training Cleanup**: Permanently deleted temporary scripts such as `ml/test_mlp_timing.py`, `ml/test_stream_timing.py`, `scripts/train_kernel_mlp_v2.py`, and `scripts/reconstruct_stations.py`. Purged duplicate data formats (`data/raw/`) and cache residue (`__pycache__`).
+
+## 2026-09-20 03:45 IST — Public Demo API Architecture
+
+### Summary
+Transitioned HELIOS frontend and backend APIs to support a public demonstration flow for the Smart India Hackathon (SIH) jury, allowing instant access to the forecast instrument without manual login walls or client-supplied credentials. 
+
+### Actions
+- **Next.js Reverse Proxy Injection**: Altered `frontend/src/app/api/helios/[...path]/route.ts` to automatically inject the internal `HELIOS_FRONTEND_API_KEY` into upstream requests targeting the FastAPI backend.
+- **Client-Side Secret Concealment**: Validated that NO API keys, internal hashes, or backend credentials leak into the browser DOM or Javascript bundles. 
+- **Endpoint Whitelisting & Sandboxing**: Hardened the proxy to explicitly allowlist ONLY public endpoints (`forecast`, `live/status`, `locations`, `health`, etc.), retaining protection for any potential internal admin routes. 
+- **AuthGate Bypass**: Bypassed `AuthGate.tsx` and modified the `/api/auth/me` endpoint to automatically acknowledge the user as authenticated if the server configures a default `HELIOS_FRONTEND_API_KEY`, instantly rendering the 3D cinematic and live instrument. 
+- **Documentation**: Logged the SIH proxy architecture into `docs/V2_DEMO_ARCH.md` and added pointers in `PORTABILITY.md`.
+
