@@ -48,11 +48,13 @@ export function int(v: number | null | undefined): string {
  * Parse the backend datetime strings, which arrive in two shapes:
  *   "2025-01-01 00:00:00.000000"  (DB rows / samples / issue-times)
  *   "2025-01-01T00:00:00"         (forecast response, ISO)
- * They are naive UTC timestamps (NWP model cycles are UTC).
+ *   "2025-01-01T00:00:00Z"        (explicit UTC)
+ * They are UTC timestamps (NWP model cycles are UTC).
  */
 export function parseApiDate(s: string | null | undefined): Date | null {
   if (!s) return null;
-  const iso = s.includes("T") ? s : s.replace(" ", "T");
+  const str = s.trim();
+  const iso = str.includes("T") ? str : str.replace(" ", "T");
   const withZ = /(Z|[+-]\d{2}:?\d{2})$/.test(iso) ? iso : `${iso}Z`;
   const d = new Date(withZ);
   return Number.isNaN(d.getTime()) ? null : d;
@@ -63,7 +65,7 @@ export function formatCycle(s: string | null | undefined): string {
   const d = parseApiDate(s);
   if (!d) return EM_DASH;
   const day = String(d.getUTCDate()).padStart(2, "0");
-  const month = d.toLocaleString("en-GB", { month: "short", timeZone: "UTC" });
+  const month = d.toLocaleString("en-GB", { month: "short", timeZone: "UTC" }).slice(0, 3);
   const hh = String(d.getUTCHours()).padStart(2, "0");
   return `${day} ${month} ${d.getUTCFullYear()} · ${hh}:00Z`;
 }
@@ -81,7 +83,7 @@ export function formatValid(s: string | null | undefined): string {
   if (!d) return EM_DASH;
   const wd = d.toLocaleString("en-GB", { weekday: "short", timeZone: "UTC" });
   const day = String(d.getUTCDate()).padStart(2, "0");
-  const month = d.toLocaleString("en-GB", { month: "short", timeZone: "UTC" });
+  const month = d.toLocaleString("en-GB", { month: "short", timeZone: "UTC" }).slice(0, 3);
   const hh = String(d.getUTCHours()).padStart(2, "0");
   return `${wd} ${day} ${month} · ${hh}:00Z`;
 }
@@ -104,7 +106,8 @@ export function validIST(s: string | null | undefined): string {
     hour12: false,
   }).formatToParts(d);
   const get = (t: string) => parts.find((p) => p.type === t)?.value ?? "";
-  return `${get("day")} ${get("month").toUpperCase()} ${get("year")} · ${get("hour")}:${get("minute")} IST`;
+  const month = get("month").toUpperCase().slice(0, 3);
+  return `${get("day")} ${month} ${get("year")} · ${get("hour")}:${get("minute")} IST`;
 }
 
 /**

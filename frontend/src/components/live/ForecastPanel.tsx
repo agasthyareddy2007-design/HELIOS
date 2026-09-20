@@ -2,7 +2,7 @@
 
 import { motion, useReducedMotion } from "motion/react";
 import clsx from "clsx";
-import { formatValid, validIST } from "@/lib/format";
+import { formatValid, validIST, parseApiDate } from "@/lib/format";
 import type { LiveForecastResponse, LiveHorizon, StationLocation } from "@/lib/types";
 import type { HeliosApiError } from "@/lib/client";
 import { AnimatedNumber } from "@/components/ui/primitives";
@@ -11,14 +11,15 @@ const LEADS = [6, 24, 48, 72, 120] as const;
 
 /** Short date for a timeline node, from the horizon's own valid_time (IST). */
 function nodeDate(validTime: string): string {
-  const d = new Date(validTime.replace("Z", "+00:00"));
+  const d = parseApiDate(validTime);
+  if (!d) return "—";
   const parts = new Intl.DateTimeFormat("en-GB", {
     timeZone: "Asia/Kolkata",
     day: "2-digit",
     month: "short",
   }).formatToParts(d);
   const get = (t: string) => parts.find((p) => p.type === t)?.value ?? "";
-  return `${get("day")} ${get("month").toUpperCase()}`;
+  return `${get("day")} ${get("month").toUpperCase().slice(0, 3)}`;
 }
 
 /**
