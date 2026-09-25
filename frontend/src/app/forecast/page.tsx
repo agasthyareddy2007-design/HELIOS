@@ -349,7 +349,7 @@ export default function ForecastPage() {
           )}
 
           {authStatus === "authenticated" && introDone && !connected && (
-            <ConnectionScreen onConnected={() => setConnected(true)} />
+            <ConnectionScreen onComplete={() => setConnected(true)} />
           )}
         </>,
         document.body

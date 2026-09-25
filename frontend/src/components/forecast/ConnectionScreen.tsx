@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { motion } from "motion/react";
 import { useLiveStatus } from "@/hooks/useHeliosData";
 
@@ -11,38 +11,57 @@ const REQUIRED_MODELS = [
 ] as const;
 
 interface ConnectionScreenProps {
-  onConnected: () => void;
+  onComplete: () => void;
 }
 
-export function ConnectionScreen({ onConnected }: ConnectionScreenProps) {
+export function ConnectionScreen({ onComplete }: ConnectionScreenProps) {
+  // Store callback in ref so inline function changes don't re-trigger or cancel effects
+  const onCompleteRef = useRef(onComplete);
+  useEffect(() => {
+    onCompleteRef.current = onComplete;
+  }, [onComplete]);
+
+  // Keep track of completion to ensure onComplete is invoked exactly once
+  const completedRef = useRef(false);
+
+  // Once all models are connected, we can lock this state to true so subsequent polls don't flicker
+  const [allConnected, setAllConnected] = useState(false);
+
   // Poll live status every 2 seconds until all models are connected.
-  const liveStatus = useLiveStatus(2000);
-  const [transitioning, setTransitioning] = useState(false);
+  // When allConnected is true, polling is no longer needed (pollMs = 0).
+  const liveStatus = useLiveStatus(allConnected ? 0 : 2000);
 
   // Check actual live status of the 3 required models.
   const modelsStatus = {
-    gfs: Boolean(liveStatus.data?.models?.gfs?.available),
-    ifs: Boolean(liveStatus.data?.models?.ifs?.available),
-    icon: Boolean(liveStatus.data?.models?.icon?.available),
+    gfs: allConnected || Boolean(liveStatus.data?.models?.gfs?.available),
+    ifs: allConnected || Boolean(liveStatus.data?.models?.ifs?.available),
+    icon: allConnected || Boolean(liveStatus.data?.models?.icon?.available),
   };
 
-  // If live_available is true or all models are online, consider it all connected.
-  const allConnected =
-    (modelsStatus.gfs && modelsStatus.ifs && modelsStatus.icon) ||
+  const isNowConnected =
+    (Boolean(liveStatus.data?.models?.gfs?.available) &&
+      Boolean(liveStatus.data?.models?.ifs?.available) &&
+      Boolean(liveStatus.data?.models?.icon?.available)) ||
     Boolean(liveStatus.data?.live_available);
 
-  // When all models are connected, give the user a clean moment to see the
-  // "Connected" state before transitioning.
+  // Lock allConnected when isNowConnected becomes true
   useEffect(() => {
-    if (!allConnected || transitioning) return;
+    if (isNowConnected && !allConnected) {
+      setAllConnected(true);
+    }
+  }, [isNowConnected, allConnected]);
 
-    setTransitioning(true);
+  // When all models are connected, wait ~1.2 seconds and fire onComplete once
+  useEffect(() => {
+    if (!allConnected || completedRef.current) return;
+    completedRef.current = true;
+
     const timer = setTimeout(() => {
-      onConnected();
+      onCompleteRef.current();
     }, 1200);
 
     return () => clearTimeout(timer);
-  }, [allConnected, transitioning, onConnected]);
+  }, [allConnected]);
 
   const hasError = Boolean(liveStatus.error);
 
