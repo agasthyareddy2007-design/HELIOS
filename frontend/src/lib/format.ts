@@ -101,13 +101,10 @@ export function validIST(s: string | null | undefined): string {
     day: "2-digit",
     month: "short",
     year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-    hour12: false,
   }).formatToParts(d);
   const get = (t: string) => parts.find((p) => p.type === t)?.value ?? "";
   const month = get("month").toUpperCase().slice(0, 3);
-  return `${get("day")} ${month} ${get("year")} · ${get("hour")}:${get("minute")} IST`;
+  return `${get("day")} ${month} ${get("year")}`;
 }
 
 /**

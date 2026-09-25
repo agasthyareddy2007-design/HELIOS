@@ -129,16 +129,25 @@ function Hero() {
             initial={reduced ? false : { opacity: 0, y: 18 }}
             animate={reduced ? undefined : { opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.05, ease: [0.16, 1, 0.3, 1] }}
-            className="display-hero mt-6 text-[clamp(4rem,10vw,8.5rem)]"
+            className="display-hero mt-5 text-[clamp(4rem,10vw,8.5rem)]"
           >
             HELIOS
           </motion.h1>
 
           <motion.p
+            initial={reduced ? false : { opacity: 0, y: 14 }}
+            animate={reduced ? undefined : { opacity: 1, y: 0 }}
+            transition={{ duration: 0.7, delay: 0.09, ease: [0.16, 1, 0.3, 1] }}
+            className="mt-2.5 max-w-lg text-[14px] leading-relaxed text-[var(--ink-dim)] sm:text-[15px]"
+          >
+            HELIOS is an AI weather forecast blending model built from scratch using XGBoost, Kernel Regression, and Multilayer Perceptron (MLP).
+          </motion.p>
+
+          <motion.p
             initial={reduced ? false : { opacity: 0, y: 16 }}
             animate={reduced ? undefined : { opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, delay: 0.12, ease: [0.16, 1, 0.3, 1] }}
-            className="mt-5 font-display text-[clamp(1.35rem,2.6vw,1.9rem)] font-medium leading-snug text-[var(--ink)]"
+            transition={{ duration: 0.7, delay: 0.14, ease: [0.16, 1, 0.3, 1] }}
+            className="mt-4 font-display text-[clamp(1.35rem,2.6vw,1.9rem)] font-medium leading-snug text-[var(--ink)]"
           >
             Intelligent weather-model blending.
           </motion.p>
@@ -146,8 +155,8 @@ function Hero() {
           <motion.p
             initial={reduced ? false : { opacity: 0, y: 16 }}
             animate={reduced ? undefined : { opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, delay: 0.18, ease: [0.16, 1, 0.3, 1] }}
-            className="mt-5 max-w-md text-[16px] leading-relaxed text-[var(--ink-dim)]"
+            transition={{ duration: 0.7, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
+            className="mt-3 max-w-md text-[16px] leading-relaxed text-[var(--ink-dim)]"
           >
             Three of the world&apos;s leading weather models rarely agree. HELIOS learns
             how much to trust each one — for a given place, hour and horizon — and blends
@@ -158,7 +167,7 @@ function Hero() {
             initial={reduced ? false : { opacity: 0, y: 16 }}
             animate={reduced ? undefined : { opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.26, ease: [0.16, 1, 0.3, 1] }}
-            className="mt-10 flex flex-wrap items-center gap-4"
+            className="mt-8 flex flex-wrap items-center gap-4"
           >
             <Link
               href="/forecast"
