@@ -207,9 +207,16 @@ function Hero() {
           className="pointer-events-none absolute inset-x-0 bottom-6 flex justify-center"
           style={enabled ? { opacity: contentOpacity } : undefined}
         >
-          <span className="font-mono text-[11px] uppercase tracking-[0.20em] text-[var(--ink-ghost)]">
-            ↓ scroll
-          </span>
+          <div className="flex flex-col items-center gap-1.5 font-mono text-[11px] uppercase tracking-[0.22em] text-[var(--ink-faint)]">
+            <span>Scroll to explore HELIOS</span>
+            <motion.span
+              animate={{ y: [0, 3, 0] }}
+              transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
+              className="text-[13px] text-[var(--helios-amber)]/80"
+            >
+              ↓
+            </motion.span>
+          </div>
         </motion.div>
       )}
     </section>
@@ -662,6 +669,9 @@ export default function LandingPage() {
               <p className="font-display text-[16px] font-semibold uppercase tracking-[0.24em]">Helios</p>
               <p className="mt-2 max-w-sm text-[14px] leading-relaxed text-[var(--ink-faint)]">
                 A learned weather-model arbitration layer, built for SIH26081.
+              </p>
+              <p className="mt-4 max-w-sm font-mono text-[11px] leading-relaxed text-[var(--ink-ghost)]">
+                MVP: Temperature forecasting is currently implemented. Rainfall prediction, disaster tracking, and additional weather capabilities are actively under development.
               </p>
             </div>
             <nav className="flex items-center gap-3" aria-label="Footer">

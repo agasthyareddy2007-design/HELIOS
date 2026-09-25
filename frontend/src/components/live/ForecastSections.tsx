@@ -303,10 +303,19 @@ export function DevelopmentNotice() {
   return (
     <footer className="mx-auto w-full max-w-[1200px] px-6 pb-24 md:px-12">
       <div className="border-t border-white/[0.06] pt-8">
-        <span className="font-mono text-[11px] uppercase tracking-[0.24em] text-[var(--ink-faint)]">
-          Development notice
-        </span>
-        <p className="mt-4 max-w-3xl text-[14px] leading-relaxed text-[var(--ink-faint)]">
+        <div className="flex flex-wrap items-center gap-3">
+          <span className="font-mono text-[11px] uppercase tracking-[0.24em] text-[var(--helios-amber)]">
+            MVP Status
+          </span>
+          <span className="h-px w-6 bg-[var(--helios-amber)]/40" />
+          <span className="font-mono text-[11px] uppercase tracking-[0.24em] text-[var(--ink-faint)]">
+            Development notice
+          </span>
+        </div>
+        <p className="mt-3 max-w-3xl font-mono text-[13px] leading-relaxed text-[var(--ink)]">
+          MVP: Temperature forecasting is currently implemented. Rainfall prediction, disaster tracking, and additional weather capabilities are actively under development.
+        </p>
+        <p className="mt-3 max-w-3xl text-[14px] leading-relaxed text-[var(--ink-faint)]">
           HELIOS is an actively evolving forecasting system. Its performance is expected to
           improve with additional historical data, observations and continued training. Early
           evaluation has produced promising results despite the limited initial training

@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { motion } from "motion/react";
 import { useLiveForecast, useLiveStatus, useLocations } from "@/hooks/useHeliosData";
 import { heliosApi } from "@/lib/client";
 import { useHelios } from "@/store/useHelios";
@@ -234,6 +235,28 @@ function ForecastPageContent() {
               />
             </div>
           </div>
+
+          {/* Scroll cue — only shown when a station is selected and secondary
+              sections exist below the fold */}
+          {station && !live.error && (
+            <div className="pointer-events-none mx-auto mt-8 flex max-w-[1500px] justify-center">
+              <motion.div
+                className="flex flex-col items-center gap-1.5 font-mono text-[11px] uppercase tracking-[0.22em] text-[var(--ink-faint)]"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.6, duration: 0.6 }}
+              >
+                <span>Scroll for model arbitration</span>
+                <motion.span
+                  animate={{ y: [0, 3, 0] }}
+                  transition={{ repeat: Infinity, duration: 2.2, ease: "easeInOut" }}
+                  className="text-[13px] text-[var(--helios-amber)]/80"
+                >
+                  ↓
+                </motion.span>
+              </motion.div>
+            </div>
+          )}
         </section>
 
         {/* Secondary sections only appear once a location is chosen. */}
@@ -254,12 +277,14 @@ function ForecastPageContent() {
 }
 
 import { AuthGate } from "@/components/auth/AuthGate";
+import { ConnectionScreen } from "@/components/forecast/ConnectionScreen";
 import { ForecastErrorBoundary } from "@/components/live/ForecastErrorBoundary";
 import { createPortal } from "react-dom";
 
 export default function ForecastPage() {
   const [authStatus, setAuthStatus] = useState<"checking" | "authenticated" | "unauthenticated">("checking");
   const [introDone, setIntroDone] = useState(false);
+  const [connected, setConnected] = useState(false);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -291,12 +316,12 @@ export default function ForecastPage() {
   }, [mounted]);
 
   useEffect(() => {
-    if (authStatus === "authenticated" && introDone) {
+    if (authStatus === "authenticated" && introDone && connected) {
       document.body.style.overflow = '';
     } else {
       document.body.style.overflow = 'hidden';
     }
-  }, [authStatus, introDone]);
+  }, [authStatus, introDone, connected]);
 
   return (
     <>
@@ -311,22 +336,26 @@ export default function ForecastPage() {
           )}
 
           {authStatus === "unauthenticated" && (
-            <AuthGate 
+            <AuthGate
               show={true}
               onAuthenticated={() => {
                 setAuthStatus("authenticated");
-              }} 
+              }}
             />
           )}
 
           {authStatus === "authenticated" && !introDone && (
             <CinematicIntro onDone={() => setIntroDone(true)} />
           )}
+
+          {authStatus === "authenticated" && introDone && !connected && (
+            <ConnectionScreen onConnected={() => setConnected(true)} />
+          )}
         </>,
         document.body
       )}
 
-      {authStatus === "authenticated" && introDone && (
+      {authStatus === "authenticated" && introDone && connected && (
         <ForecastErrorBoundary>
           <ForecastPageContent />
         </ForecastErrorBoundary>
