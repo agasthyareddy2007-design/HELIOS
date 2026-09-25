@@ -10,6 +10,8 @@ import {
   type MotionValue,
 } from "motion/react";
 import { SiteNav } from "@/components/site/SiteNav";
+import { MvpStatusBanner } from "@/components/landing/MvpStatusBanner";
+import { PerformanceValidation } from "@/components/landing/PerformanceValidation";
 import { Button } from "@/components/ui/Button";
 import { StateRegion, SignalFocus } from "@/components/stage/StateRegion";
 import { ReliabilityEngine } from "@/components/landing/ReliabilityEngine";
@@ -238,7 +240,7 @@ function VerificationLoop() {
 
   return (
     <section ref={ref} className="relative">
-      <Section eyebrow="Verification loop" className="py-24 md:py-32">
+      <Section eyebrow="Verification loop" className="py-16 md:py-20">
         <MaskedHeading
           as="h2"
           className="max-w-2xl display-section text-[clamp(2.4rem,5vw,4rem)]"
@@ -280,6 +282,8 @@ function VerificationLoop() {
           The loop is closed and continuous: verified skill feeds straight back into how
           the models are weighted next time.
         </p>
+
+        <PerformanceValidation />
       </Section>
     </section>
   );
@@ -393,6 +397,7 @@ export default function LandingPage() {
   return (
     <>
       <SiteNav variant="overlay" />
+      <MvpStatusBanner />
 
       <main className="relative overflow-hidden text-[var(--color-ink)]">
         {/* ---------------------------- HERO ---------------------------- */}
@@ -403,7 +408,7 @@ export default function LandingPage() {
         {/* --------------------------- PROBLEM -------------------------- */}
         <StateRegion state="divergence">
         <ScrollStage>
-          <Section eyebrow="The problem" className="py-28 md:py-36">
+          <Section eyebrow="The problem" className="py-16 md:py-20">
             <div className="grid gap-10 md:grid-cols-[1.2fr_1fr] md:items-center">
               <MaskedHeading
                 as="h2"
@@ -424,7 +429,7 @@ export default function LandingPage() {
         {/* ------------------------- THREE MODELS ----------------------- */}
         <StateRegion state="signals">
         <ScrollStage>
-          <Section id="how" eyebrow="Three models" className="py-24">
+          <Section id="how" eyebrow="Three models" className="py-16 md:py-20">
             <MaskedHeading
               as="h2"
               className="max-w-2xl display-section text-[clamp(2.4rem,5vw,4rem)]"
@@ -490,7 +495,7 @@ export default function LandingPage() {
         {/* --------------------- WHAT HELIOS LEARNS --------------------- */}
         <StateRegion state="reasoning">
         <ScrollStage>
-          <Section eyebrow="What HELIOS learns" className="py-28 md:py-36">
+          <Section eyebrow="What HELIOS learns" className="py-16 md:py-20">
             <MaskedHeading
               as="h2"
               className="display-section max-w-4xl text-[clamp(2.4rem,5vw,4rem)]"
@@ -599,7 +604,7 @@ export default function LandingPage() {
         {/* ----------------------------- RESULT ------------------------- */}
         <StateRegion state="resolution">
         <ScrollStage intensity={1.2}>
-          <Section eyebrow="The result" className="py-28">
+          <Section eyebrow="The result" className="py-16 md:py-20">
             <div className="flex flex-col items-center text-center">
               <div className="flex items-center gap-3 font-display text-xl font-medium tracking-tight">
                 {MODELS.map((m, i) => (
@@ -630,7 +635,7 @@ export default function LandingPage() {
 
         {/* --------------------------- FORECAST CTA --------------------- */}
         <ScrollStage intensity={1.3}>
-          <Section className="py-28">
+          <Section className="py-16 md:py-20">
             {/* No container: the closing statement stands in the atmosphere. A
                 single hairline above it provides the only structure needed. */}
             <div className="relative py-6 text-center">

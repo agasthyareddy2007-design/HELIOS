@@ -41,12 +41,15 @@ function useResource<T>(
   fetcher: (signal: AbortSignal) => Promise<T>,
   deps: ReadonlyArray<unknown>,
   enabled = true,
+  initialData?: T,
 ): Resource<T> {
   const [state, setState] = useState<InternalState<T>>({
-    data: null,
+    data: initialData ?? null,
     error: null,
-    settled: false,
+    settled: initialData !== undefined,
   });
+
+  const hadInitial = useRef(initialData !== undefined);
   const [nonce, setNonce] = useState(0);
   const latest = useRef(0);
 
@@ -60,6 +63,11 @@ function useResource<T>(
 
   useEffect(() => {
     if (!enabled) return;
+
+    if (hadInitial.current) {
+      hadInitial.current = false;
+      return;
+    }
 
     // FIX: Clear state immediately when deps change so we don't render stale data.
     // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -170,14 +178,19 @@ export function useLiveStatus(pollMs = 0): Resource<LiveStatusResponse> {
   return res;
 }
 
+export const liveForecastPrefetchCache = new Map<string, LiveForecastResponse>();
+
 export function useLiveForecast(
   station: string | null,
   leads?: number[],
 ): Resource<LiveForecastResponse> {
   const key = leads?.join(",") ?? "";
+  const initialData = (station && !leads) ? liveForecastPrefetchCache.get(station) : undefined;
+  
   return useResource(
     (s) => heliosApi.liveForecast(station as string, leads, s),
     [station, key],
     Boolean(station),
+    initialData
   );
 }

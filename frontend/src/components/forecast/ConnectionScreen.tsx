@@ -2,7 +2,9 @@
 
 import { useEffect, useRef, useState } from "react";
 import { motion } from "motion/react";
-import { useLiveStatus } from "@/hooks/useHeliosData";
+import { useLiveStatus, liveForecastPrefetchCache } from "@/hooks/useHeliosData";
+import { heliosApi } from "@/lib/client";
+import type { LiveForecastResponse } from "@/lib/types";
 
 const REQUIRED_MODELS = [
   { id: "gfs", name: "GFS", origin: "NOAA" },
@@ -11,7 +13,7 @@ const REQUIRED_MODELS = [
 ] as const;
 
 interface ConnectionScreenProps {
-  onComplete: () => void;
+  onComplete: (forecast?: LiveForecastResponse) => void;
 }
 
 export function ConnectionScreen({ onComplete }: ConnectionScreenProps) {
@@ -24,7 +26,7 @@ export function ConnectionScreen({ onComplete }: ConnectionScreenProps) {
   // Keep track of completion to ensure onComplete is invoked exactly once
   const completedRef = useRef(false);
 
-  // Once all models are connected, we can lock this state to true so subsequent polls don't flicker
+  // Once all models are connected, we lock this state to true so subsequent polls don't flicker
   const [allConnected, setAllConnected] = useState(false);
 
   // Poll live status every 2 seconds until all models are connected.
@@ -51,17 +53,52 @@ export function ConnectionScreen({ onComplete }: ConnectionScreenProps) {
     }
   }, [isNowConnected, allConnected]);
 
-  // When all models are connected, wait ~1.2 seconds and fire onComplete once
+  // Forecast Prefetch State Machine
+  const [prefetchStatus, setPrefetchStatus] = useState<"idle" | "loading" | "error" | "ready">("idle");
+  const [prefetchedData, setPrefetchedData] = useState<LiveForecastResponse | undefined>(undefined);
+
+  // Trigger prefetch once the models are connected
   useEffect(() => {
-    if (!allConnected || completedRef.current) return;
+    if (!allConnected || prefetchStatus === "ready") return;
+
+    let mounted = true;
+    const fetchForecast = async () => {
+      setPrefetchStatus("loading");
+      try {
+        const controller = new AbortController();
+        const data = await heliosApi.liveForecast("INI0000VOHS", undefined, controller.signal);
+        if (mounted) {
+          liveForecastPrefetchCache.set("INI0000VOHS", data);
+          setPrefetchedData(data);
+          setPrefetchStatus("ready");
+        }
+      } catch (err) {
+        if (mounted) {
+          setPrefetchStatus("error");
+          // Re-attempt after a delay on failure
+          setTimeout(fetchForecast, 2000);
+        }
+      }
+    };
+
+    fetchForecast();
+
+    return () => {
+      mounted = false;
+    };
+  }, [allConnected, prefetchStatus]);
+
+  // When all models are connected and the forecast is ready, wait ~1.2 seconds and fire onComplete once
+  useEffect(() => {
+    if (!allConnected || prefetchStatus !== "ready" || completedRef.current) return;
     completedRef.current = true;
 
     const timer = setTimeout(() => {
-      onCompleteRef.current();
+      onCompleteRef.current(prefetchedData);
     }, 1200);
 
     return () => clearTimeout(timer);
-  }, [allConnected]);
+  }, [allConnected, prefetchStatus, prefetchedData]);
 
   const hasError = Boolean(liveStatus.error);
 
@@ -151,17 +188,55 @@ export function ConnectionScreen({ onComplete }: ConnectionScreenProps) {
 
           <div className="my-6 h-px w-full bg-[#d0e2f5]" />
 
-          {/* Status readout footer */}
-          <div className="text-center font-mono">
-            {allConnected ? (
-              <div className="space-y-1">
-                <p className="text-xs font-semibold tracking-wide text-[#107c41]">
-                  All forecast services connected
-                </p>
-                <p className="text-[11px] uppercase tracking-[0.16em] text-[#4a6585] animate-pulse">
-                  Entering HELIOS...
-                </p>
+          {/* Default Forecast Prefetch Context Area */}
+          {allConnected && (
+            <div className="mb-6 flex flex-col items-center justify-center space-y-2">
+              <span className="text-center font-mono text-xs font-semibold tracking-wide text-[#107c41]">
+                All forecast services connected
+              </span>
+
+              <div className="flex flex-col items-center space-y-1.5 pt-2">
+                <span className="font-mono text-[11px] uppercase tracking-[0.1em] text-[#4a6585]">
+                  Preparing default forecast
+                </span>
+                <span className="font-display text-sm font-medium tracking-wide text-[#0a1526]">
+                  Hyderabad, Telangana
+                </span>
+
+                <div className="mt-2 text-center font-mono text-[10px] uppercase tracking-[0.12em] text-[#6d88a8]">
+                  {prefetchStatus === "loading" && (
+                    <span className="flex items-center gap-1.5 animate-pulse text-[#8a6020]">
+                      <span className="relative flex h-1.5 w-1.5 bg-[#f59b3c] rounded-full animate-ping" />
+                      Loading forecast...
+                    </span>
+                  )}
+                  {prefetchStatus === "error" && (
+                    <span className="flex flex-col items-center text-[#b45309]">
+                      <span>Preparing default forecast...</span>
+                      <span>Retrying automatically...</span>
+                    </span>
+                  )}
+                  {prefetchStatus === "ready" && (
+                     <span className="flex items-center justify-center space-x-1.5 text-[#107c41]">
+                       <span className="font-bold">✓</span>
+                       <span>Hyderabad forecast ready</span>
+                     </span>
+                  )}
+                </div>
               </div>
+            </div>
+          )}
+
+          {/* Status readout footer */}
+          <div className="text-center font-mono border-t border-[#d0e2f5]/50 pt-5">
+            {prefetchStatus === "ready" ? (
+              <p className="text-[12px] font-bold uppercase tracking-[0.2em] text-[var(--helios-amber)] drop-shadow-md animate-pulse">
+                HELIOS READY
+              </p>
+            ) : allConnected ? (
+              <p className="text-xs text-[#4a6585] tracking-widest opacity-0 animate-pulse-soft">
+                INITIALIZING...
+              </p>
             ) : hasError ? (
               <div className="space-y-1">
                 <p className="text-xs font-medium text-[#b45309]">

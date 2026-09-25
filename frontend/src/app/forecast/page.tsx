@@ -49,6 +49,10 @@ function ForecastPageContent() {
     const place = params.get("place");
     const lead = params.get("lead");
     if (!place && !lead) {
+      const hyd = locations.data.locations.find(
+        (s) => s.station === "INI0000VOHS" || (s.name ?? "").toLowerCase().includes("hyderabad"),
+      );
+      if (hyd && !station) selectStation(hyd);
       deepLinkApplied.current = true;
       return;
     }
